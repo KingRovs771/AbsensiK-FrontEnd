@@ -63,7 +63,7 @@ const menuGroups = [
         label: "Master Data",
         route: "#",
         children: [
-          { label: "Data User", route: "" },
+          { label: "Data User", route: "/calender" },
           { label: "Data Foto", route: "" },
         ],
       },
@@ -184,7 +184,7 @@ const menuGroups = [
           </svg>
         ),
         label: "Logout",
-        route: "/logout",
+        route: "/auth/signin",
       },
     ],
   },
