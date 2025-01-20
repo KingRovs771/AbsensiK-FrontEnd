@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+'use client';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface Option {
   value: string;
@@ -27,7 +28,7 @@ const MultiSelect: React.FC<DropdownProps> = ({ id }) => {
           newOptions.push({
             value: select.options[i].value,
             text: select.options[i].innerText,
-            selected: select.options[i].hasAttribute("selected"),
+            selected: select.options[i].hasAttribute('selected'),
           });
         }
         setOptions(newOptions);
@@ -81,23 +82,16 @@ const MultiSelect: React.FC<DropdownProps> = ({ id }) => {
   useEffect(() => {
     const clickHandler = ({ target }: MouseEvent) => {
       if (!dropdownRef.current) return;
-      if (
-        !show ||
-        dropdownRef.current.contains(target) ||
-        trigger.current.contains(target)
-      )
-        return;
+      if (!show || dropdownRef.current.contains(target) || trigger.current.contains(target)) return;
       setShow(false);
     };
-    document.addEventListener("click", clickHandler);
-    return () => document.removeEventListener("click", clickHandler);
+    document.addEventListener('click', clickHandler);
+    return () => document.removeEventListener('click', clickHandler);
   });
 
   return (
     <div className="relative z-50">
-      <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-        Multiselect Dropdown
-      </label>
+      <label className="mb-3 block text-sm font-medium text-black dark:text-white">Multiselect Dropdown</label>
       <div>
         <select className="hidden" id={id}>
           <option value="1">Option 2</option>
@@ -114,27 +108,11 @@ const MultiSelect: React.FC<DropdownProps> = ({ id }) => {
                 <div className="mb-2 flex rounded border border-stroke py-2 pl-3 pr-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input">
                   <div className="flex flex-auto flex-wrap gap-3">
                     {selected.map((index) => (
-                      <div
-                        key={index}
-                        className="my-1.5 flex items-center justify-center rounded border-[.5px] border-stroke bg-gray px-2.5 py-1.5 text-sm font-medium dark:border-strokedark dark:bg-white/30"
-                      >
-                        <div className="max-w-full flex-initial">
-                          {options[index].text}
-                        </div>
+                      <div key={index} className="my-1.5 flex items-center justify-center rounded border-[.5px] border-stroke bg-gray px-2.5 py-1.5 text-sm font-medium dark:border-strokedark dark:bg-white/30">
+                        <div className="max-w-full flex-initial">{options[index].text}</div>
                         <div className="flex flex-auto flex-row-reverse">
-                          <div
-                            onClick={() => remove(index)}
-                            className="cursor-pointer pl-2 hover:text-danger"
-                          >
-                            <svg
-                              className="fill-current"
-                              role="button"
-                              width="12"
-                              height="12"
-                              viewBox="0 0 12 12"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
+                          <div onClick={() => remove(index)} className="cursor-pointer pl-2 hover:text-danger">
+                            <svg className="fill-current" role="button" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                               <path
                                 fillRule="evenodd"
                                 clipRule="evenodd"
@@ -148,27 +126,13 @@ const MultiSelect: React.FC<DropdownProps> = ({ id }) => {
                     ))}
                     {selected.length === 0 && (
                       <div className="flex-1">
-                        <input
-                          placeholder="Select an option"
-                          className="h-full w-full appearance-none bg-transparent p-1 px-2 outline-none"
-                          defaultValue={selectedValues()}
-                        />
+                        <input placeholder="Select an option" className="h-full w-full appearance-none bg-transparent p-1 px-2 outline-none" defaultValue={selectedValues()} />
                       </div>
                     )}
                   </div>
                   <div className="flex w-8 items-center py-1 pl-1 pr-1">
-                    <button
-                      type="button"
-                      onClick={open}
-                      className="h-6 w-6 cursor-pointer outline-none focus:outline-none"
-                    >
-                      <svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
+                    <button type="button" onClick={open} className="h-6 w-6 cursor-pointer outline-none focus:outline-none">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <g opacity="0.8">
                           <path
                             fillRule="evenodd"
@@ -184,9 +148,7 @@ const MultiSelect: React.FC<DropdownProps> = ({ id }) => {
               </div>
               <div className="w-full px-4">
                 <div
-                  className={`max-h-select absolute left-0 top-full z-40 w-full overflow-y-auto rounded bg-white shadow dark:bg-form-input ${
-                    isOpen() ? "" : "hidden"
-                  }`}
+                  className={`max-h-select absolute left-0 top-full z-40 w-full overflow-y-auto rounded bg-white shadow dark:bg-form-input ${isOpen() ? '' : 'hidden'}`}
                   ref={dropdownRef}
                   onFocus={() => setShow(true)}
                   onBlur={() => setShow(false)}
@@ -194,19 +156,10 @@ const MultiSelect: React.FC<DropdownProps> = ({ id }) => {
                   <div className="flex w-full flex-col">
                     {options.map((option, index) => (
                       <div key={index}>
-                        <div
-                          className="w-full cursor-pointer rounded-t border-b border-stroke hover:bg-primary/5 dark:border-form-strokedark"
-                          onClick={(event) => select(index, event)}
-                        >
-                          <div
-                            className={`relative flex w-full items-center border-l-2 border-transparent p-2 pl-2 ${
-                              option.selected ? "border-primary" : ""
-                            }`}
-                          >
+                        <div className="w-full cursor-pointer rounded-t border-b border-stroke hover:bg-primary/5 dark:border-form-strokedark" onClick={(event) => select(index, event)}>
+                          <div className={`relative flex w-full items-center border-l-2 border-transparent p-2 pl-2 ${option.selected ? 'border-primary' : ''}`}>
                             <div className="flex w-full items-center">
-                              <div className="mx-2 leading-6">
-                                {option.text}
-                              </div>
+                              <div className="mx-2 leading-6">{option.text}</div>
                             </div>
                           </div>
                         </div>
