@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import ChatCard from "../Chat/ChatCard";
-import TableOne from "../Tables/TableOne";
+import TableOne from "../Tables/TableUsers";
 import CardDataStats from "../CardDataStats";
 import Calendar from "../Calender";
 
