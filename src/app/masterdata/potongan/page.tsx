@@ -1,5 +1,11 @@
 import DefaultLayout from "@/components/Layouts/MainLayout";
 import TablePotongan from "@/components/Tables/TablePotongan";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Data Potongan Page | Absensi Karyawan PT Alma",
+  description: "Halaman Data Users",
+};
 
 const PotonganPage: React.FC = () => {
   return (
@@ -15,7 +21,7 @@ const PotonganPage: React.FC = () => {
                 Master Data /
               </a>
             </li>
-            <li className="font-medium text-primary">Data Users</li>
+            <li className="font-medium tex  t-primary">Data Users</li>
           </ol>
         </nav>
       </div>

@@ -1,20 +1,10 @@
-import { BRAND } from "@/types/brand";
-import Image from "next/image";
+import { tipe_potongan } from "@/types/tipe_potongan";
 
-const brandData: BRAND[] = [
+const TipePotonganData: tipe_potongan[] = [
   {
-    logo: "/images/brand/brand-01.svg",
-    name: "Rizky Budiarto",
-    visitors: 3.5,
-    revenues: "5,768",
-    sales: 590,
-  },
-  {
-    logo: "/images/brand/brand-01.svg",
-    name: "Rizky Budiartp",
-    visitors: 3.5,
-    revenues: "5,768",
-    sales: 590,
+    tipe_potongan_id: 1,
+    name_potongan: "BPJS",
+    nilai_potongan: 20000,
   },
 ];
 
@@ -22,7 +12,7 @@ const TablePotongan = () => {
   return (
     <div className="rounded-sm border border-stroke bg-white px-12 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
       <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
-        Data Users
+        Data Potongan
       </h4>
       <a
         className="rounded-sm mb-2 inline-flex items-center justify-center bg-primary px-2 py-2 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-2"
@@ -37,18 +27,21 @@ const TablePotongan = () => {
         >
           <path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 144L48 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l144 0 0 144c0 17.7 14.3 32 32 32s32-14.3 32-32l0-144 144 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-144 0 0-144z" />
         </svg>
-        <span>Insert User</span>
+        <span>Insert Potongan</span>
       </a>
       <div className="flex flex-col">
-        <div className="grid max-screen grid-cols-6 rounded-sm bg-gray-2 dark:bg-meta-4 sm:grid-cols-6 text-center">
+        <div className="grid max-screen grid-cols-5 rounded-sm bg-gray-2 dark:bg-meta-4 sm:grid-cols-6 text-center">
+          <div className="p-2.5 text-center xl:p-5">
+            <h5 className="text-sm font-medium uppercase xsm:text-base">No</h5>
+          </div>
           <div className="p-2.5 text-center xl:p-5">
             <h5 className="text-sm font-medium uppercase xsm:text-base">
-              Nama Lengkap
+              Nama Potongan
             </h5>
           </div>
           <div className="p-2.5 text-center xl:p-5">
             <h5 className="text-sm font-medium uppercase xsm:text-base">
-              Divisi
+              Tipe Potongan
             </h5>
           </div>
           <div className="hidden max p-2.5 text-center sm:block xl:p-5">
@@ -68,27 +61,32 @@ const TablePotongan = () => {
           </div>
         </div>
 
-        {brandData.map((brand, key) => (
+        {TipePotonganData.map((TipePotongan, key) => (
           <div
             className={`grid grid-cols-3 sm:grid-cols-6 ${
-              key === brandData.length - 1
+              key === TipePotonganData.length - 1
                 ? ""
                 : "border-b border-stroke dark:border-strokedark"
             }`}
             key={key}
           >
             <div className="flex items-center gap-3 p-2.5 xl:p-5">
+              <div className="flex-shrink-0 text-center">
+                <p className="text-black text-center dark:text-white">1</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-2.5 xl:p-5">
               <div className="flex-shrink-0 text-center ">
-                <Image src={brand.logo} alt="Brand" width={100} height={100} />
+                <p className="text-black dark:text-white">
+                  {TipePotongan.name_potongan}
+                </p>
               </div>
             </div>
 
             <div className="flex items-center justify-center p-2.5 xl:p-2">
-              <p className="text-black dark:text-white">{brand.name}</p>
-            </div>
-
-            <div className="flex items-center justify-center p-2.5 xl:p-2">
-              <p className="text-meta-3">${brand.revenues}</p>
+              <p className="text-black dark:text-white">
+                Rp. {TipePotongan.nilai_potongan}
+              </p>
             </div>
 
             <div className="flex items-center justify-center p-2.5 xl:p-1">
