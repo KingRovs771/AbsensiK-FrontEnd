@@ -115,7 +115,7 @@ const menuGroups = [
           </svg>
         ),
         label: "Laporan",
-        route: "/tables",
+        route: "/laporan",
       },
       {
         icon: (

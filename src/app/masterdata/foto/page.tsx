@@ -1,7 +1,7 @@
 import React from "react";
 import { Metadata } from "next";
 import DefaultLayout from "@/components/Layouts/MainLayout";
-import TableUsers from "@/components/Tables/TableUsers";
+import TableFoto from "@/components/Tables/TableFoto";
 
 export const metadata: Metadata = {
   title: "Data Foto Page | Absensi Karyawan PT Alma",
@@ -13,7 +13,7 @@ const FotoPage: React.FC = () => {
     <DefaultLayout>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-title-md2 font-semibold text-black dark:text-white">
-          Data User
+          Data Foto
         </h2>
         <nav>
           <ol className="flex items-center gap-2">
@@ -22,14 +22,14 @@ const FotoPage: React.FC = () => {
                 Master Data /
               </a>
             </li>
-            <li className="font-medium text-primary">Data Users</li>
+            <li className="font-medium text-primary">Data Foto Pegawai</li>
           </ol>
         </nav>
       </div>
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">
         <div className="flex flex-col gap-9">
           <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-            <TableUsers></TableUsers>
+            <TableFoto></TableFoto>
           </div>
         </div>
       </div>
