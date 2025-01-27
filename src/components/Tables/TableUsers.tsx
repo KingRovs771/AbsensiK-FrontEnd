@@ -26,7 +26,7 @@ const TableUsers = () => {
       </h4>
       <a
         className="rounded-sm mb-2 inline-flex items-center justify-center bg-primary px-2 py-2 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-2"
-        href="#"
+        href="/masterdata/users/form"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

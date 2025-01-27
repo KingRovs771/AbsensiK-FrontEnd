@@ -81,7 +81,7 @@ const menuGroups = [
           </svg>
         ),
         label: "Role User",
-        route: "/profile",
+        route: "/role",
       },
       {
         icon: (

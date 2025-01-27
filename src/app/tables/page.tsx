@@ -1,5 +1,5 @@
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
-import TableOne from "@/components/Tables/TableUsers";
+import TableUsers from "@/components/Tables/TableUsers";
 
 import { Metadata } from "next";
 import DefaultLayout from "@/components/Layouts/MainLayout";
@@ -16,7 +16,7 @@ const TablesPage = () => {
       <Breadcrumb pageName="Tables" />
 
       <div className="flex flex-col gap-10">
-        <TableOne />
+        <TableUsers />
       </div>
     </DefaultLayout>
   );
