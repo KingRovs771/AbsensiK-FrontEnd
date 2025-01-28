@@ -1,5 +1,5 @@
 export type Departement = {
-  departement_id: string;
-  name_departement: string;
+  departments_id: string;
+  name_departments: string;
   description: string;
 };

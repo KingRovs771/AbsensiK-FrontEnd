@@ -2,64 +2,77 @@
 import DefaultLayout from "@/components/Layouts/MainLayout";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import { useState, useEffect } from "react";
-
-type ApiResponse<T> = {
-  status: string;
-  message: string;
-  data: T;
-  error?: string;
-};
-
-type DataDepartement = {
-  departement: string;
-};
-
-type DataRole = {
-  role_id: string;
-  nama_role: string;
-};
+import { Role } from "@/types/role";
+import { ApiResponse } from "@/types/ApiResponse";
+import { Departement } from "@/types/departement";
 
 const FormUserPage: React.FC = () => {
-  const [dataDepartement, setDepartement] = useState<DataDepartement | null>(
-    null
-  );
-  const [dataRole, setRole] = useState<DataRole[] | null>(null);
+  const [dataDepartement, setDepartement] = useState<Departement[]>([]);
+  const [dataRole, setRole] = useState<Role[]>([]);
   const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const departementResponse = await fetch("");
-        if (!departementResponse.ok) {
-          throw new Error("Http Error! Status : ${departementResponse.status}");
-        }
-        const dataDepartement: ApiResponse<DataDepartement> =
-          await departementResponse.json();
-        if (dataDepartement.status === "success") {
-          setDepartement(dataDepartement.data);
-        } else {
-          throw new Error(
-            dataDepartement.error || "Unknown error from departement"
-          );
-        }
+  const [selectedRole, setSelectedRole] = useState<string>("");
+  const [selectedDepartements, setSelectedDepartements] = useState<string>("");
 
-        const roleResponse = await fetch("");
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const roleResponse = await fetch(
+          "http://localhost:8080/v1/roles/AllRoles"
+        );
         if (!roleResponse.ok) {
-          throw new Error("Http Error! Status : ${roleReponse.status}");
+          throw new Error("Http Error! Status : ${response.status}");
         }
-        const dataRole: ApiResponse<DataRole[]> = await roleResponse.json();
-        if (dataRole.status === "success") {
-          setRole(dataRole.data);
+        const apiResponse: ApiResponse<Role[]> = await roleResponse.json();
+        if (apiResponse.Status === "Success") {
+          setRole(apiResponse.Data);
         } else {
-          throw new Error(dataRole.error || "Unknown error from departement");
+          throw new Error(apiResponse.Message || "Unknown error from server");
         }
       } catch (error) {
         setError(
           error instanceof Error ? error.message : "An Unknown error eccurred"
         );
+        console.log(error);
       }
     };
-    fetchData();
+
+    const fetchDepartements = async () => {
+      try {
+        const departementResponse = await fetch(
+          "http://localhost:8080/v1/departements/AllDepartements"
+        );
+        if (!departementResponse.ok) {
+          throw new Error("Http Error! Status : ${departementResponse.status}");
+        }
+        const apiResponse: ApiResponse<Departement[]> =
+          await departementResponse.json();
+        if (apiResponse.Status === "Success") {
+          setDepartement(apiResponse.Data);
+        } else {
+          throw new Error(apiResponse.Message || "Unknown error from server");
+        }
+      } catch (error) {
+        setError(
+          error instanceof Error ? error.message : "An Unknown error eccurred"
+        );
+        console.log(error);
+      }
+    };
+    fetchRoles();
+    fetchDepartements();
   }, []);
+
+  const handleRoleSelectChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    setSelectedRole(event.target.value);
+  };
+
+  const handleDepartementsSelectChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    setSelectedDepartements(event.target.value);
+  };
 
   return (
     <DefaultLayout>
@@ -112,17 +125,29 @@ const FormUserPage: React.FC = () => {
 
                 <div className="mb-4.5">
                   <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Departement
+                    Departements
                   </label>
                   <select
                     name=""
                     id=""
+                    onChange={handleDepartementsSelectChange}
                     className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                   >
                     <option value="">---Pilih Departements----</option>
-                    <option value="">Laki-Laki</option>
-                    <option value="">Perempuan</option>
+                    {dataDepartement && dataDepartement.length > 0 ? (
+                      dataDepartement.map((departement) => (
+                        <option
+                          key={departement.departments_id}
+                          value={departement.name_departments}
+                        >
+                          {departement.name_departments}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="">Loading.....</option>
+                    )}
                   </select>
+                  {error && <p style={{ color: "red" }}>{error}</p>}
                 </div>
 
                 <div className="mb-4.5">
@@ -132,12 +157,21 @@ const FormUserPage: React.FC = () => {
                   <select
                     name=""
                     id=""
+                    onChange={handleRoleSelectChange}
                     className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                   >
                     <option value="">---Pilih Role----</option>
-                    <option value="">Laki-Laki</option>
-                    <option value="">Perempuan</option>
+                    {dataRole.length > 0 ? (
+                      dataRole.map((role) => (
+                        <option key={role.role_id} value={role.name_role}>
+                          {role.name_role}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="">Loading.....</option>
+                    )}
                   </select>
+                  {error && <p style={{ color: "red" }}>{error}</p>}
                 </div>
 
                 <div className="mb-4.5">
