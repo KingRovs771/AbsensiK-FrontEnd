@@ -65,7 +65,7 @@ const menuGroups = [
         children: [
           { label: "Data User", route: "/masterdata/users" },
           { label: "Data Foto", route: "/masterdata/foto" },
-          { label: "Data Potongan", route: "/masterdata/potongan" },
+          { label: "Data Departements", route: "/masterdata/departements" },
           { label: "Data Role", route: "/masterdata/role" },
           { label: "Data Radius", route: "/masterdata/radius" },
           { label: "Data Jadwal", route: "/masterdata/jadwal" },
