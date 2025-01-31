@@ -1,6 +1,6 @@
 "use client";
 
-import { Role } from "@/types/role";
+import { Role } from "@/types/Role";
 import { ApiResponse } from "@/types/ApiResponse";
 import { useState, useEffect } from "react";
 

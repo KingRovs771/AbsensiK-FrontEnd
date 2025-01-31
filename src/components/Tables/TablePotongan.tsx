@@ -1,6 +1,6 @@
-import { tipe_potongan } from "@/types/tipe_potongan";
+import { Tipe_potongan } from "@/types/Tipe_potongan";
 
-const TipePotonganData: tipe_potongan[] = [
+const TipePotonganData: Tipe_potongan[] = [
   {
     tipe_potongan_id: 1,
     name_potongan: "BPJS",

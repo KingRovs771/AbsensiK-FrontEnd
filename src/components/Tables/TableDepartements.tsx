@@ -1,6 +1,6 @@
 "use client";
 
-import { Departement } from "@/types/departement";
+import { Departement } from "@/types/Departement";
 import { ApiResponse } from "@/types/ApiResponse";
 import { useState, useEffect } from "react";
 
@@ -11,14 +11,14 @@ const TableDepartements = () => {
   useEffect(() => {
     const fetchDepartements = async () => {
       try {
-        const roleResponse = await fetch(
+        const departementsResponse = await fetch(
           "http://localhost:8080/v1/departements/AllDepartements"
         );
-        if (!roleResponse.ok) {
+        if (!departementsResponse.ok) {
           throw new Error("Http Error! Status : ${response.status}");
         }
         const apiResponse: ApiResponse<Departement[]> =
-          await roleResponse.json();
+          await departementsResponse.json();
         if (apiResponse.Status === "Success") {
           setDepartements(apiResponse.Data);
         } else {
@@ -40,7 +40,7 @@ const TableDepartements = () => {
       </h4>
       <a
         className="rounded-sm mb-2 inline-flex items-center justify-center bg-primary px-2 py-2 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-2"
-        href="#"
+        href="masterdata/departements/formInput"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

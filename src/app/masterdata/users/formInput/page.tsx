@@ -2,9 +2,9 @@
 import DefaultLayout from "@/components/Layouts/MainLayout";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import { useState, useEffect } from "react";
-import { Role } from "@/types/role";
+import { Role } from "@/types/Role";
 import { ApiResponse } from "@/types/ApiResponse";
-import { Departement } from "@/types/departement";
+import { Departement } from "@/types/Departement";
 
 const FormUserPage: React.FC = () => {
   const [dataDepartement, setDepartement] = useState<Departement[]>([]);
