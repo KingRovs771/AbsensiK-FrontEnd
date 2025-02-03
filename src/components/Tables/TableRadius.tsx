@@ -4,20 +4,20 @@ import { Radius } from "@/types/Radius";
 import { ApiResponse } from "@/types/ApiResponse";
 import { useState, useEffect } from "react";
 
-const TableDepartements = () => {
+const TableRadius = () => {
   const [dataRadius, setRadius] = useState<Radius[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchRadius = async () => {
       try {
-        const roleResponse = await fetch(
+        const radiusResponse = await fetch(
           "http://localhost:8080/v1/radius/AllRadius"
         );
-        if (!roleResponse.ok) {
+        if (!radiusResponse.ok) {
           throw new Error("Http Error! Status : ${response.status}");
         }
-        const apiResponse: ApiResponse<Radius[]> = await roleResponse.json();
+        const apiResponse: ApiResponse<Radius[]> = await radiusResponse.json();
         if (apiResponse.Status === "Success") {
           setRadius(apiResponse.Data);
         } else {
@@ -39,7 +39,7 @@ const TableDepartements = () => {
       </h4>
       <a
         className="rounded-sm mb-2 inline-flex items-center justify-center bg-primary px-2 py-2 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-2"
-        href="#"
+        href="/masterdata/radius/formInput"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -171,4 +171,4 @@ const TableDepartements = () => {
   );
 };
 
-export default TableDepartements;
+export default TableRadius;
