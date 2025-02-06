@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import DefaultLayout from "@/components/Layouts/MainLayout";
 import TableSchedule from "@/components/Tables/TableSchedule";
 export const metadata: Metadata = {
-  title: "",
+  title: "Schedule Page | PT Alma",
   description: "",
 };
 

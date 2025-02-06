@@ -1,7 +1,7 @@
 export type Radius = {
   radius_id: number;
   name_location: string;
-  latitude: number;
-  longitude: number;
+  latitude: string;
+  longitude: string;
   radius: number;
 };
