@@ -24,7 +24,7 @@ const columns = [
 ];
 
 const TableData = () => {
-  const [item, setData] = useState<data>
-  return <DataTable columns={columns} data={data} />;
+  const [items, setData] = useState<data>;
+  return <DataTable columns={columns} data={items} />;
 };
 export default TableData;

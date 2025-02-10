@@ -1,11 +1,53 @@
-import { useState } from "react";
+"use client";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import ClickOutside from "@/components/ClickOutside";
 
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const router = useRouter();
+  const [user, setUsers] = useState<{ fullname: string } | null>(null);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/auth/signin");
+    } else {
+      const fetchGetProfile = async () => {
+        try {
+          const UserInfoResponse = await fetch(
+            "http://localhost:8080/v1/auth/getInfo",
+            {
+              method: "GET",
+              credentials: "include",
+            }
+          );
+          if (!UserInfoResponse.ok) {
+            throw new Error("Failed to fetch user info");
+          }
+          const data = await UserInfoResponse.json();
+          setUsers(data);
+        } catch (error) {
+          console.log(error);
+          router.push("/auth/signin");
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchGetProfile();
+    }
+  }, [router, setLoading]);
+
+  if (loading) {
+    return <p>Loading....</p>;
+  }
+
+  if (!user) {
+    return null;
+  }
   return (
     <ClickOutside onClick={() => setDropdownOpen(false)} className="relative">
       <Link
@@ -15,7 +57,7 @@ const DropdownUser = () => {
       >
         <span className="hidden text-right lg:block">
           <span className="block text-sm font-medium text-black dark:text-white">
-            Thomas Anree
+            {user.fullname}
           </span>
           <span className="block text-xs">UX Designer</span>
         </span>
