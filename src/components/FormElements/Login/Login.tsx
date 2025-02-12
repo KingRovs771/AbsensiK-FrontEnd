@@ -14,6 +14,7 @@ const FormLogin = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ username, password }),
+        credentials: "include",
       });
 
       if (!LoginResponse.ok) {
@@ -27,11 +28,12 @@ const FormLogin = () => {
       SetError(
         error instanceof Error ? error.message : "Error An unknwon occuraced"
       );
+      console.error(error);
     }
   };
 
   return (
-    <form>
+    <div className="login-container">
       {error && <p>{error}</p>}
       <div className="mb-4">
         <label className="mb-2.5 block font-medium text-black dark:text-white">
@@ -111,7 +113,7 @@ const FormLogin = () => {
           className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90"
         />
       </div>
-    </form>
+    </div>
   );
 };
 

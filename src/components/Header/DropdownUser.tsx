@@ -1,14 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import ClickOutside from "@/components/ClickOutside";
+import { useRouter } from "next/navigation";
 
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const router = useRouter();
-  const [user, setUsers] = useState<{ fullname: string } | null>(null);
+  const [user, setUsers] = useState<{ full_name: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,6 +30,7 @@ const DropdownUser = () => {
           }
           const data = await UserInfoResponse.json();
           setUsers(data);
+          console.log(data);
         } catch (error) {
           console.log(error);
           router.push("/auth/signin");
@@ -48,6 +49,19 @@ const DropdownUser = () => {
   if (!user) {
     return null;
   }
+
+  const handleLogout = async () => {
+    try {
+      await fetch("http://localhost:8080/v1/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+      localStorage.removeItem("token");
+      window.location.href = "/auth/signin";
+    } catch (error) {
+      console.log("Failed to Logout: ", error);
+    }
+  };
   return (
     <ClickOutside onClick={() => setDropdownOpen(false)} className="relative">
       <Link
@@ -57,7 +71,7 @@ const DropdownUser = () => {
       >
         <span className="hidden text-right lg:block">
           <span className="block text-sm font-medium text-black dark:text-white">
-            {user.fullname}
+            {user.full_name}
           </span>
           <span className="block text-xs">UX Designer</span>
         </span>
@@ -170,7 +184,10 @@ const DropdownUser = () => {
               </Link>
             </li>
           </ul>
-          <button className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
+          >
             <svg
               className="fill-current"
               width="22"
