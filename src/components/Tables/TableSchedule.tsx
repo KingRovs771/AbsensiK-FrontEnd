@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 const TableSchedules = () => {
   const [dataSchedules, setSchedules] = useState<Schedules[]>([]);
   const [error, setError] = useState<string | null>(null);
-
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   useEffect(() => {
     const fetchSchedules = async () => {
       try {
@@ -33,6 +33,32 @@ const TableSchedules = () => {
     };
     fetchSchedules();
   }, []);
+
+  const SchdulesDelete = async (SchedulesId: string) => {
+    try {
+      const SchdulesDeleteResp = await fetch("", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!SchdulesDeleteResp.ok) {
+        throw new Error(`HTTP Error Status! : ${SchdulesDeleteResp.status}`);
+      }
+      const result = await SchdulesDeleteResp.json();
+      setSuccessMessage(result.message);
+      setSchedules(
+        dataSchedules.filter(
+          (schedules) => schedules.schedules_id !== SchedulesId
+        )
+      );
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "An Unknown error occurred"
+      );
+    }
+  };
   return (
     <div className="rounded-sm border border-stroke bg-white px-12 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
       <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
@@ -53,6 +79,8 @@ const TableSchedules = () => {
         </svg>
         <span>Insert Schedules</span>
       </a>
+
+      {successMessage && <p className="text-green-500">{successMessage}</p>}
       <div className="flex flex-col">
         <div className="grid max-screen grid-cols-5 rounded-sm bg-gray-2 dark:bg-meta-4 sm:grid-cols-8 text-center">
           <div className="p-2.5 text-center xl:p-5">
@@ -112,7 +140,7 @@ const TableSchedules = () => {
               <div className="flex items-center gap-3 p-2.5 xl:p-5">
                 <div className="flex-shrink-0 text-center ">
                   <p className="text-black dark:text-white">
-                    {schedules.user_uid}
+                    {schedules.full_name}
                   </p>
                 </div>
               </div>
@@ -158,9 +186,9 @@ const TableSchedules = () => {
               </div>
 
               <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
-                <a
+                <button
                   className="rounded-sm inline-flex items-center justify-center bg-danger px-2 py-2 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-2"
-                  href="#"
+                  onClick={() => SchdulesDelete(schedules.schedules_id)}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -172,7 +200,7 @@ const TableSchedules = () => {
                     <path d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z" />
                   </svg>
                   <span>Delete</span>
-                </a>
+                </button>
               </div>
             </div>
           ))

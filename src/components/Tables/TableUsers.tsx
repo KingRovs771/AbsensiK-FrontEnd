@@ -15,7 +15,7 @@ const TableUsers = () => {
           "http://localhost:8080/v1/users/allUsers"
         );
         if (!usersResponse.ok) {
-          throw new Error("Http Error! Status : ${response.status}");
+          throw new Error(`Http Error! Status : ${usersResponse.status}`);
         }
         const apiResponse: ApiResponse<UserData[]> = await usersResponse.json();
         if (apiResponse.Status === "Success") {
