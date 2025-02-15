@@ -34,14 +34,17 @@ const TableSchedules = () => {
     fetchSchedules();
   }, []);
 
-  const SchdulesDelete = async (SchedulesId: string) => {
+  const SchdulesDelete = async (ScheduleId: string) => {
     try {
-      const SchdulesDeleteResp = await fetch("", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const SchdulesDeleteResp = await fetch(
+        `http://localhost:8080/v1/schdules/deleteSchedules/${ScheduleId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!SchdulesDeleteResp.ok) {
         throw new Error(`HTTP Error Status! : ${SchdulesDeleteResp.status}`);
@@ -50,7 +53,7 @@ const TableSchedules = () => {
       setSuccessMessage(result.message);
       setSchedules(
         dataSchedules.filter(
-          (schedules) => schedules.schedules_id !== SchedulesId
+          (schedules) => schedules.schedule_id !== ScheduleId
         )
       );
     } catch (error) {
@@ -128,7 +131,7 @@ const TableSchedules = () => {
                   ? ""
                   : "border-b border-stroke dark:border-strokedark"
               }`}
-              key={schedules.schedules_id}
+              key={schedules.schedule_id}
             >
               <div className="flex items-center gap-3 p-2.5 xl:p-7">
                 <div className="flex-shrink-0 text-center">
@@ -140,14 +143,14 @@ const TableSchedules = () => {
               <div className="flex items-center gap-3 p-2.5 xl:p-5">
                 <div className="flex-shrink-0 text-center ">
                   <p className="text-black dark:text-white">
-                    {schedules.full_name}
+                    {schedules.user.full_name}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center justify-center p-2.5 xl:p-2">
                 <p className="text-black dark:text-white">
-                  {schedules.start_time.toString()}
+                  {schedules.user.department.name_departments}
                 </p>
               </div>
 
@@ -188,7 +191,7 @@ const TableSchedules = () => {
               <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
                 <button
                   className="rounded-sm inline-flex items-center justify-center bg-danger px-2 py-2 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-2"
-                  onClick={() => SchdulesDelete(schedules.schedules_id)}
+                  onClick={() => SchdulesDelete(schedules.schedule_id)}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

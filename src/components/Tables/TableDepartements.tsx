@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 const TableDepartements = () => {
   const [dataDepartements, setDepartements] = useState<Departement[]>([]);
   const [error, setError] = useState<string | null>(null);
-
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   useEffect(() => {
     const fetchDepartements = async () => {
       try {
@@ -24,7 +24,7 @@ const TableDepartements = () => {
         } else {
           throw new Error(apiResponse.Message || "Unknown error from server");
         }
-      } catch (error) {
+      } catch (error) { 
         setError(
           error instanceof Error ? error.message : "An Unknown error eccurred"
         );
@@ -33,6 +33,34 @@ const TableDepartements = () => {
     };
     fetchDepartements();
   }, []);
+
+  const handleDepartmentDelete = async (DepartmentsId: string) => {
+    try {
+      const DepartmentsResponse = await fetch(
+        `http://localhost:8080/v1/departements/deleteDepartements/${DepartmentsId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (!DepartmentsResponse.ok) {
+        throw new Error(`HTTP Error! Status : ${DepartmentsResponse.status}`);
+      }
+      const result = await DepartmentsResponse.json();
+      setSuccessMessage(result.message);
+      setDepartements(
+        dataDepartements?.filter(
+          (departements) => departements.departments_id !== DepartmentsId
+        )
+      );
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "An unknown error occurred"
+      );
+    }
+  };
   return (
     <div className="rounded-sm border border-stroke bg-white px-12 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
       <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
@@ -129,9 +157,11 @@ const TableDepartements = () => {
               </div>
 
               <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
-                <a
+                <button
+                  onClick={() =>
+                    handleDepartmentDelete(departements.departments_id)
+                  }
                   className="rounded-sm inline-flex items-center justify-center bg-danger px-2 py-2 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-2"
-                  href="#"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -143,14 +173,15 @@ const TableDepartements = () => {
                     <path d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z" />
                   </svg>
                   <span>Delete</span>
-                </a>
+                </button>
               </div>
             </div>
           ))
         ) : (
           <p>Loading.....</p>
         )}
-        ;{error && <p style={{ color: "red" }}>{error}</p>}
+        {error && <p style={{ color: "red" }}>{error}</p>}
+        {successMessage && <p className="text-green-500">{successMessage}</p>}
       </div>
     </div>
   );

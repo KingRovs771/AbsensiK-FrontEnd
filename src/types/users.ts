@@ -1,3 +1,6 @@
+import { Departement } from "./Departement";
+import { Role } from "./Role";
+
 export type Users = {
   user_id: string;
   user_uid: string;
@@ -9,5 +12,7 @@ export type Users = {
   address: Text;
   dailyrate: number;
   departements_id: string;
+  department: Departement;
   role_id: string;
+  role: Role;
 };

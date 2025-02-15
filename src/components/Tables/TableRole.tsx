@@ -34,7 +34,7 @@ const TableRole = () => {
     fetchRoles();
   }, []);
 
-  const handleDepartmentDelete = async (RoleId: string) => {
+  const handleRoleDelete = async (RoleId: string) => {
     try {
       const DepartmentsResponse = await fetch(
         `http://localhost:8080/v1/roles/deleteRole/${RoleId}`,
@@ -153,7 +153,7 @@ const TableRole = () => {
               <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
                 <button
                   className="rounded-sm inline-flex items-center justify-center bg-danger px-2 py-2 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-2"
-                  onClick={() => handleDepartmentDelete(role.role_id)}
+                  onClick={() => handleRoleDelete(role.role_id)}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

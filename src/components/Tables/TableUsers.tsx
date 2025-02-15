@@ -1,11 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { UserData } from "@/types/UsersData";
+import { Users } from "@/types/Users";
 import { useEffect, useState } from "react";
 import { ApiResponse } from "@/types/ApiResponse";
 const TableUsers = () => {
-  const [dataUsers, setUsers] = useState<UserData[]>([]);
+  const [dataUsers, setUsers] = useState<Users[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -17,7 +17,7 @@ const TableUsers = () => {
         if (!usersResponse.ok) {
           throw new Error(`Http Error! Status : ${usersResponse.status}`);
         }
-        const apiResponse: ApiResponse<UserData[]> = await usersResponse.json();
+        const apiResponse: ApiResponse<Users[]> = await usersResponse.json();
         if (apiResponse.Status === "Success") {
           setUsers(apiResponse.Data);
         } else {
@@ -115,7 +115,7 @@ const TableUsers = () => {
 
               <div className="flex items-center justify-center p-2.5 xl:p-2">
                 <p className="text-meta-3 text-center">
-                  {users.name_departments}
+                  {users.department.name_departments}
                 </p>
               </div>
 
