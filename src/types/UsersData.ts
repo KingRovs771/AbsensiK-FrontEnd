@@ -1,8 +1,13 @@
-export type UserData = {
-  user_id: string;
+export type UsersData = {
+  user_uid: string;
+  username: string;
+  password: string;
+  email: string;
   full_name: string;
-  departement_id: string;
+  gender: string;
+  phone: string;
+  address: string;
+  dailyrate: number;
+  departments_id: string;
   role_id: string;
-  name_departments: string;
-  name_role: string;
 };

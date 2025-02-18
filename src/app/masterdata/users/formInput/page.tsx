@@ -5,13 +5,27 @@ import { useState, useEffect } from "react";
 import { Role } from "@/types/Role";
 import { ApiResponse } from "@/types/ApiResponse";
 import { Departement } from "@/types/Departement";
+import { UsersData } from "@/types/UsersData";
 
 const FormUserPage: React.FC = () => {
   const [dataDepartement, setDepartement] = useState<Departement[]>([]);
   const [dataRole, setRole] = useState<Role[]>([]);
+  const [dataUsers, setUsers] = useState<UsersData[]>([]);
+
   const [error, setError] = useState<string | null>(null);
-  const [selectedRole, setSelectedRole] = useState<string>("");
-  const [selectedDepartements, setSelectedDepartements] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const [userUID, setUserUID] = useState<string>("");
+  const [username, setUsername] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [fullName, setFullName] = useState<string>("");
+  const [gender, setGender] = useState<string>("");
+  const [phone, setPhone] = useState<string>("");
+  const [address, setAddress] = useState<string>("");
+  const [dailyrate, setDailyRate] = useState<number>(0);
+  const [departmentsId, setDepartmeentsId] = useState<string>("");
+  const [roleId, setRoleId] = useState<string>("");
 
   useEffect(() => {
     const fetchRoles = async () => {
@@ -62,18 +76,43 @@ const FormUserPage: React.FC = () => {
     fetchDepartements();
   }, []);
 
-  const handleRoleSelectChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    setSelectedRole(event.target.value);
-  };
+  const SaveDataUsers = async () => {
+    const users = {
+      user_uid: userUID,
+      username: username,
+      password: password,
+      email: email,
+      full_name: fullName,
+      gender: gender,
+      phone: phone,
+      address: address,
+      dailyrate: dailyrate,
+      departments_id: departmentsId,
+      role_id: roleId,
+    };
+    try {
+      const usersResponse = await fetch(
+        "http://localhost:8080/v1/users/insertUsers",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(users),
+        }
+      );
+      if (!usersResponse.ok) {
+        throw new Error(`HTTP Error! Status : ${usersResponse.status}`);
+      }
 
-  const handleDepartementsSelectChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    setSelectedDepartements(event.target.value);
+      const ResultUsers = await usersResponse.json();
+      setSuccessMessage(ResultUsers);
+      setUsers([...(dataUsers || []), users]);
+      alert("Input Users Berhasil");
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "An Unknown Error Occured"
+      );
+    }
   };
-
   return (
     <DefaultLayout>
       <Breadcrumb pageName="Form Users" />
@@ -86,169 +125,203 @@ const FormUserPage: React.FC = () => {
                 User Form
               </h3>
             </div>
-            <form action="#">
-              <div className="p-6.5">
-                <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                  <div className="w-full">
-                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                      Username
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Masukkan Username"
-                      className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                    />
-                  </div>
-                </div>
-
-                <div className="mb-4.5">
-                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Password <span className="text-meta-1">*</span>
-                  </label>
-                  <input
-                    type="password"
-                    placeholder="Masukkan Password"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                  />
-                </div>
-
-                <div className="mb-4.5">
-                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="Masukkan Email"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                  />
-                </div>
-
-                <div className="mb-4.5">
-                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Departements
-                  </label>
-                  <select
-                    name=""
-                    id=""
-                    onChange={handleDepartementsSelectChange}
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                  >
-                    <option value="">---Pilih Departements----</option>
-                    {dataDepartement && dataDepartement.length > 0 ? (
-                      dataDepartement.map((departement) => (
-                        <option
-                          key={departement.departments_id}
-                          value={departement.name_departments}
-                        >
-                          {departement.name_departments}
-                        </option>
-                      ))
-                    ) : (
-                      <option value="">Loading.....</option>
-                    )}
-                  </select>
-                  {error && <p style={{ color: "red" }}>{error}</p>}
-                </div>
-
-                <div className="mb-4.5">
-                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Role
-                  </label>
-                  <select
-                    name=""
-                    id=""
-                    onChange={handleRoleSelectChange}
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                  >
-                    <option value="">---Pilih Role----</option>
-                    {dataRole.length > 0 ? (
-                      dataRole.map((role) => (
-                        <option key={role.role_id} value={role.name_role}>
-                          {role.name_role}
-                        </option>
-                      ))
-                    ) : (
-                      <option value="">Loading.....</option>
-                    )}
-                  </select>
-                  {error && <p style={{ color: "red" }}>{error}</p>}
-                </div>
-
-                <div className="mb-4.5">
-                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Nama Lengkap
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="Masukkan Nama Lengkap"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                  />
-                </div>
-
-                <div className="mb-4.5">
-                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Phone
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="Masukkan Email"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                  />
-                </div>
-
-                <div className="mb-4.5">
-                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Jenis Kelamin
-                  </label>
-                  <select
-                    name=""
-                    id=""
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                  >
-                    <option value="">---Pilih Jenis Kelamin----</option>
-                    <option value="">Laki-Laki</option>
-                    <option value="">Perempuan</option>
-                  </select>
-                </div>
-
-                <div className="mb-4.5">
-                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Phone
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="+62 | Masukkan Nomor : 62890389820018"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                  />
-                </div>
-
-                <div className="mb-4.5">
-                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Bayaran Harian
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Masukkan Bayaran harian"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                  />
-                </div>
-
-                <div className="mb-6">
-                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Address
-                  </label>
-                  <textarea
-                    rows={6}
-                    placeholder="Type your message"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                  ></textarea>
-                </div>
-
-                <button className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-90">
-                  Send Message
-                </button>
+            {successMessage && (
+              <p className="text-green-500">{successMessage}</p>
+            )}
+            {error && <p className="text-red-500">{error}</p>}
+            <div className="p-6.5">
+              <div className="mb-4.5">
+                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                  Kode Pegawai <span className="text-meta-1">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="userUID"
+                  value={userUID}
+                  onChange={(e) => setUserUID(e.target.value)}
+                  placeholder="Masukkan Password"
+                  className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                />
               </div>
-            </form>
+              <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
+                <div className="w-full">
+                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    id="username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Masukkan Username"
+                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                  />
+                </div>
+              </div>
+
+              <div className="mb-4.5">
+                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                  Password <span className="text-meta-1">*</span>
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Masukkan Password"
+                  className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                />
+              </div>
+
+              <div className="mb-4.5">
+                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Masukkan Email"
+                  className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                />
+              </div>
+
+              <div className="mb-4.5">
+                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                  Departements
+                </label>
+                <select
+                  name="departmentsId"
+                  id="departmentsId"
+                  onChange={(e) => setDepartmeentsId(e.target.value)}
+                  className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                >
+                  <option value="">---Pilih Departements----</option>
+                  {dataDepartement && dataDepartement.length > 0 ? (
+                    dataDepartement.map((departement) => (
+                      <option
+                        id="departmentsId"
+                        key={departement.departments_id}
+                        value={departement.departments_id}
+                      >
+                        {departement.name_departments}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="">Loading.....</option>
+                  )}
+                </select>
+              </div>
+
+              <div className="mb-4.5">
+                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                  Role
+                </label>
+                <select
+                  name="roleId"
+                  id="roleId"
+                  onChange={(e) => setRoleId(e.target.value)}
+                  className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                >
+                  <option value="">---Pilih Role----</option>
+                  {dataRole.length > 0 ? (
+                    dataRole.map((role) => (
+                      <option
+                        id="roleId"
+                        key={role.role_id}
+                        value={role.role_id}
+                      >
+                        {role.name_role}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="">Loading.....</option>
+                  )}
+                </select>
+              </div>
+
+              <div className="mb-4.5">
+                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                  Nama Lengkap
+                </label>
+                <input
+                  type="text"
+                  id="fullName"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Masukkan Nama Lengkap"
+                  className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                />
+              </div>
+
+              <div className="mb-4.5">
+                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                  Jenis Kelamin
+                </label>
+                <select
+                  id="gender"
+                  onChange={(e) => setGender(e.target.value)}
+                  className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                >
+                  <option value="">---Pilih Jenis Kelamin----</option>
+                  <option value="Laki-Laki" id="gender">
+                    Laki-Laki
+                  </option>
+                  <option value="Perempuan" id="gender">
+                    Perempuan
+                  </option>
+                </select>
+              </div>
+
+              <div className="mb-4.5">
+                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                  Phone
+                </label>
+                <input
+                  type="text"
+                  id="phone"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+62 | Masukkan Nomor : 62890389820018"
+                  className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                />
+              </div>
+
+              <div className="mb-4.5">
+                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                  Bayaran Harian
+                </label>
+                <input
+                  type="number"
+                  id="dailyrate"
+                  value={dailyrate}
+                  onChange={(e) => setDailyRate(Number(e.target.value))}
+                  placeholder="Masukkan Bayaran harian"
+                  className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                />
+              </div>
+
+              <div className="mb-6">
+                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                  Address
+                </label>
+                <textarea
+                  rows={6}
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="Type your message"
+                  className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                ></textarea>
+              </div>
+
+              <button
+                onClick={SaveDataUsers}
+                className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-90"
+              >
+                Save Data
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
 "use client";
 import DefaultLayout from "@/components/Layouts/MainLayout";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Departement } from "@/types/Departement";
 
 const FormDepartmentsPage: React.FC = () => {
@@ -14,7 +14,8 @@ const FormDepartmentsPage: React.FC = () => {
   const [error, SetError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const SaveDataDepartments = async () => {
+  const SaveDataDepartments = async (e: React.FormEvent) => {
+    e.preventDefault();
     const departments = {
       departments_id: DepartmentsId,
       name_departments: NameDepartments,
