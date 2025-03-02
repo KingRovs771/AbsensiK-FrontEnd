@@ -1,9 +1,8 @@
 import { Metadata } from "next";
 import DefaultLayout from "@/components/Layouts/MainLayout";
 import TableIzin from "@/components/Tables/TableIzin";
-import TableData from "@/components/Tables/TableData";
 export const metadata: Metadata = {
-  title: "",
+  title: "Page Data Izin | ",
   description: "",
 };
 
@@ -29,7 +28,6 @@ const IzinPage: React.FC = () => {
         <div className="flex flex-col gap-9">
           <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
             <TableIzin></TableIzin>
-            <TableData></TableData>
           </div>
         </div>
       </div>

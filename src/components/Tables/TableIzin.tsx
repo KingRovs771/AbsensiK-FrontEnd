@@ -1,26 +1,25 @@
 "use client";
 
-import { Departement } from "@/types/Departement";
+import { Izin } from "@/types/Izin";
 import { ApiResponse } from "@/types/ApiResponse";
 import { useState, useEffect } from "react";
 
-const TableIzin = () => {
-  const [dataDepartements, setDepartements] = useState<Departement[]>([]);
+const TableIzin = ({ izinProp }) => {
+  const [dataIzin, setDataIzin] = useState<Izin[]>(izinProp);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchDepartements = async () => {
+    const fetchIzin = async () => {
       try {
-        const departementsResponse = await fetch(
-          "http://localhost:8080/v1/departements/AllDepartements"
+        const IzinResponse = await fetch(
+          "http://localhost:8080/v1/izin/allIzin"
         );
-        if (!departementsResponse.ok) {
-          throw new Error("Http Error! Status : ${response.status}");
+        if (!IzinResponse.ok) {
+          throw new Error(`Http Error! Status : ${IzinResponse.status}`);
         }
-        const apiResponse: ApiResponse<Departement[]> =
-          await departementsResponse.json();
+        const apiResponse: ApiResponse<Izin[]> = await IzinResponse.json();
         if (apiResponse.Status === "Success") {
-          setDepartements(apiResponse.Data);
+          setDataIzin(apiResponse.Data);
         } else {
           throw new Error(apiResponse.Message || "Unknown error from server");
         }
@@ -31,8 +30,53 @@ const TableIzin = () => {
         console.log(error);
       }
     };
-    fetchDepartements();
+    fetchIzin();
   }, []);
+
+  const approveizin = async (izinId: number) => {
+    try {
+      if (izinId) {
+        const approveResponse = await fetch(
+          `http://localhost:8080/v1/izin/${izinId}/approve`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Full-Name": "nama_lengkap",
+            },
+          }
+        );
+        if (!approveResponse.ok) {
+          throw new Error(`HTTP Error! Status : ${approveResponse.status}`);
+        }
+        const ApiResponse: ApiResponse<Izin> = await approveResponse.json();
+
+        if (ApiResponse.Status === "Success") {
+          setDataIzin((prevIzins) =>
+            prevIzins.map((izin) =>
+              izin.izin_id
+                ? {
+                    ...izin,
+                    status: 1,
+                    approve_by: "fullname",
+                    approve_date: new Date().toISOString().split("T")[0],
+                  }
+                : izin
+            )
+          );
+        }
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "An Unknown error");
+      console.log(error);
+    }
+  };
+
+  //Parsing Tanggal
+  const formatDate = (datetimeString: string | number | Date) => {
+    const date = new Date(datetimeString);
+    return date.toISOString().split("T")[0];
+  };
   return (
     <div className="rounded-sm border border-stroke bg-white px-12 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
       <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
@@ -81,15 +125,15 @@ const TableIzin = () => {
             </h5>
           </div>
         </div>
-        {dataDepartements && dataDepartements.length > 0 ? (
-          dataDepartements.map((departements, index) => (
+        {dataIzin && dataIzin.length > 0 ? (
+          dataIzin.map((izin, index) => (
             <div
               className={`grid grid-cols-3 sm:grid-cols-8 ${
-                index === dataDepartements.length - 1
+                index === dataIzin.length - 1
                   ? ""
                   : "border-b border-stroke dark:border-strokedark"
               }`}
-              key={departements.departments_id}
+              key={izin.izin_id}
             >
               <div className="flex items-center gap-3 p-2.5 xl:p-5">
                 <div className="flex-shrink-0 text-center">
@@ -101,39 +145,46 @@ const TableIzin = () => {
               <div className="flex items-center gap-3 p-2.5 xl:p-5">
                 <div className="flex-shrink-0 text-center ">
                   <p className="text-black dark:text-white">
-                    {departements.name_departments}
+                    {izin.users?.full_name || "unknown"}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center justify-center p-2.5 xl:p-2">
                 <p className="text-black dark:text-white text-center">
-                  {departements.description}
+                  {formatDate(izin.start_date)}
                 </p>
               </div>
 
               <div className="flex items-center justify-center p-2.5 xl:p-2">
                 <p className="text-black dark:text-white text-center">
-                  {departements.description}
+                  {formatDate(izin.end_date)}
                 </p>
               </div>
 
               <div className="flex items-center justify-center p-2.5 xl:p-2">
                 <p className="text-black dark:text-white text-center">
-                  {departements.description}
+                  {izin.alasan}
                 </p>
               </div>
 
               <div className="flex items-center justify-center p-2.5 xl:p-2">
-                <p className="text-black dark:text-white text-center">
-                  {departements.description}
+                <p
+                  className={`inline-flex items-center px-2.5 py-0.5 justify-center gap-1 rounded-full font-medium text-sm ${izin.status === 0 ? "bg-red-500" : izin.status === 1 ? "bg-green-500" : "bg-gray-500"}  text-white dark:text-white`}
+                >
+                  {izin.status === 0
+                    ? "belum di acc"
+                    : izin.status === 1
+                      ? "sudah di acc"
+                      : "status tidak diketahui"}
                 </p>
               </div>
 
               <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
-                <a
+                <button
                   className="rounded-sm inline-flex items-center justify-center bg-warning px-2 py-2 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-2"
-                  href="#"
+                  onClick={() => approveizin(parseInt(izin.izin_id))}
+                  disabled={izin.status === 1}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -145,7 +196,7 @@ const TableIzin = () => {
                     <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1 0 32c0 8.8 7.2 16 16 16l32 0zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
                   </svg>
                   <span>Approve</span>
-                </a>
+                </button>
               </div>
 
               <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
@@ -170,7 +221,7 @@ const TableIzin = () => {
         ) : (
           <p>Loading.....</p>
         )}
-        ;{error && <p style={{ color: "red" }}>{error}</p>}
+        {error && <p style={{ color: "red" }}>{error}</p>}
       </div>
     </div>
   );

@@ -2,6 +2,7 @@ import { Departement } from "./Departement";
 import { Role } from "./Role";
 
 export type Users = {
+  user_id: string;
   user_uid: string;
   username: string;
   password: string;
