@@ -1,54 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import ClickOutside from "@/components/ClickOutside";
-import { useRouter } from "next/navigation";
-
+import useAuth from "@/hooks/useAuth";
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const router = useRouter();
-  const [user, setUsers] = useState<{ full_name: string } | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/auth/signin");
-    } else {
-      const fetchGetProfile = async () => {
-        try {
-          const UserInfoResponse = await fetch(
-            "http://localhost:8080/v1/auth/getInfo",
-            {
-              method: "GET",
-              credentials: "include",
-            }
-          );
-          if (!UserInfoResponse.ok) {
-            throw new Error("Failed to fetch user info");
-          }
-          const data = await UserInfoResponse.json();
-          setUsers(data);
-          console.log(data);
-        } catch (error) {
-          console.log(error);
-          router.push("/auth/signin");
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchGetProfile();
-    }
-  }, [router, setLoading]);
-
-  if (loading) {
-    return <p>Loading....</p>;
-  }
-
-  if (!user) {
-    return null;
-  }
+  const authInfo = useAuth();
 
   const handleLogout = async () => {
     try {
@@ -71,9 +29,9 @@ const DropdownUser = () => {
       >
         <span className="hidden text-right lg:block">
           <span className="block text-sm font-medium text-black dark:text-white">
-            {user.full_name}
+            {authInfo?.full_name}
           </span>
-          <span className="block text-xs">UX Designer</span>
+          <span className="block text-xs">{authInfo?.role.name_role}</span>
         </span>
 
         <span className="h-12 w-12 rounded-full">

@@ -2,11 +2,17 @@
 
 import { Izin } from "@/types/Izin";
 import { ApiResponse } from "@/types/ApiResponse";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import useAuth from "@/hooks/useAuth";
 
-const TableIzin = ({ izinProp }) => {
-  const [dataIzin, setDataIzin] = useState<Izin[]>(izinProp);
+interface IzinListProps {
+  izinsProp: Izin[];
+}
+
+const TableIzin: React.FC<IzinListProps> = ({ izinsProp }) => {
+  const [dataIzin, setDataIzin] = useState<Izin[]>(izinsProp);
   const [error, setError] = useState<string | null>(null);
+  const authInfo = useAuth();
 
   useEffect(() => {
     const fetchIzin = async () => {
@@ -34,6 +40,10 @@ const TableIzin = ({ izinProp }) => {
   }, []);
 
   const approveizin = async (izinId: number) => {
+    if (!authInfo) {
+      console.error("User Information not loaded");
+      return;
+    }
     try {
       if (izinId) {
         const approveResponse = await fetch(
@@ -42,7 +52,9 @@ const TableIzin = ({ izinProp }) => {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
-              "X-Full-Name": "nama_lengkap",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              "X-Full-Name": authInfo.fullName,
+              "X-Role": authInfo.role.name_role,
             },
           }
         );
@@ -58,7 +70,7 @@ const TableIzin = ({ izinProp }) => {
                 ? {
                     ...izin,
                     status: 1,
-                    approve_by: "fullname",
+                    approve_by: authInfo.full_name,
                     approve_date: new Date().toISOString().split("T")[0],
                   }
                 : izin
