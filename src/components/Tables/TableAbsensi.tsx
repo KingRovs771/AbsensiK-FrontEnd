@@ -84,21 +84,17 @@ const TableAbsensi = () => {
               <div className="flex items-center gap-3 p-2.5 xl:p-5">
                 <div className="flex-shrink-0 text-center ">
                   <p className="text-black dark:text-white">
-                    {departements.name_departments}
+                    Mutiah Nur Hasannah
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center justify-center p-2.5 xl:p-2">
-                <p className="text-black dark:text-white text-center">
-                  {departements.description}
-                </p>
+                <p className="text-black dark:text-white text-center">07.30</p>
               </div>
 
               <div className="flex items-center justify-center p-2.5 xl:p-2">
-                <p className="text-black dark:text-white text-center">
-                  {departements.description}
-                </p>
+                <p className="text-black dark:text-white text-center">17.00</p>
               </div>
 
               <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">

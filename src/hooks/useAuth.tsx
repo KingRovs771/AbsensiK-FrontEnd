@@ -3,12 +3,16 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
+interface Role {
+  role_id: string;
+  name_role: string;
+  description: string;
+}
+
 interface AuthInfo {
   full_name: string;
   email: string;
-  role: {
-    name_role: string;
-  };
+  role: Role;
   [key: string]: any;
 }
 
