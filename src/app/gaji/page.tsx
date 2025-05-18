@@ -21,7 +21,7 @@ const DepartementsPage: React.FC = () => {
                 Main Data
               </a>
             </li>
-            <li className="font-medium text-primary">Data Departements</li>
+            <li className="font-medium text-primary">Data Gaji</li>
           </ol>
         </nav>
       </div>

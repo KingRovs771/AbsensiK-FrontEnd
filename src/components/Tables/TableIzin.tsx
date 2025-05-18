@@ -4,6 +4,8 @@ import { Izin } from "@/types/Izin";
 import { ApiResponse } from "@/types/ApiResponse";
 import React, { useState, useEffect } from "react";
 import useAuth from "@/hooks/useAuth";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface IzinListProps {
   izinsProp: Izin[];
@@ -13,31 +15,27 @@ const TableIzin: React.FC<IzinListProps> = ({ izinsProp }) => {
   const [dataIzin, setDataIzin] = useState<Izin[]>(izinsProp);
   const [error, setError] = useState<string | null>(null);
   const authInfo = useAuth();
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
 
-  useEffect(() => {
-    const fetchIzin = async () => {
-      try {
-        const IzinResponse = await fetch(
-          "http://localhost:8080/v1/izin/allIzin"
-        );
-        if (!IzinResponse.ok) {
-          throw new Error(`Http Error! Status : ${IzinResponse.status}`);
-        }
-        const apiResponse: ApiResponse<Izin[]> = await IzinResponse.json();
-        if (apiResponse.Status === "Success") {
-          setDataIzin(apiResponse.Data);
-        } else {
-          throw new Error(apiResponse.Message || "Unknown error from server");
-        }
-      } catch (error) {
-        setError(
-          error instanceof Error ? error.message : "An Unknown error eccurred"
-        );
-        console.log(error);
+  const fetchIzin = async () => {
+    try {
+      const IzinResponse = await fetch("http://localhost:8080/v1/izin/allIzin");
+      if (!IzinResponse.ok) {
+        throw new Error(`Http Error! Status : ${IzinResponse.status}`);
       }
-    };
-    fetchIzin();
-  }, []);
+      const apiResponse: ApiResponse<Izin[]> = await IzinResponse.json();
+      if (apiResponse.Status === "Success") {
+        setDataIzin(apiResponse.Data);
+      } else {
+        throw new Error(apiResponse.Message || "Unknown error from server");
+      }
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "An Unknown error eccurred"
+      );
+      console.log(error);
+    }
+  };
 
   const approveizin = async (izinId: number) => {
     if (!authInfo) {
@@ -45,38 +43,41 @@ const TableIzin: React.FC<IzinListProps> = ({ izinsProp }) => {
       return;
     }
     try {
-      if (izinId) {
-        const approveResponse = await fetch(
-          `http://localhost:8080/v1/izin/${izinId}/approve`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-              "X-Full-Name": authInfo.fullName,
-              "X-Role": authInfo.role.name_role,
-            },
-          }
-        );
-        if (!approveResponse.ok) {
-          throw new Error(`HTTP Error! Status : ${approveResponse.status}`);
+      const approveResponse = await fetch(
+        `http://localhost:8080/v1/izin/${izinId}/approve`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "X-Full-Name": authInfo.full_name,
+          },
         }
-        const ApiResponse: ApiResponse<Izin> = await approveResponse.json();
+      );
+      if (!approveResponse.ok) {
+        throw new Error(`HTTP Error! Status : ${approveResponse.status}`);
+      }
+      const ApiResponse: ApiResponse<Izin> = await approveResponse.json();
+      console.log("Approval Response:", ApiResponse);
+      toast.success("Izin berhasil di-approve!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
 
-        if (ApiResponse.Status === "Success") {
-          setDataIzin((prevIzins) =>
-            prevIzins.map((izin) =>
-              izin.izin_id
-                ? {
-                    ...izin,
-                    status: 1,
-                    approve_by: authInfo.full_name,
-                    approve_date: new Date().toISOString().split("T")[0],
-                  }
-                : izin
-            )
-          );
-        }
+      setRefreshTrigger((prev) => !prev);
+      if (ApiResponse.Status === "Success") {
+        setDataIzin((prevIzins) =>
+          prevIzins.map((izin) =>
+            parseInt(izin.izin_id, 10) === izinId
+              ? {
+                  ...izin,
+                  status: 1,
+                  approve_by: authInfo.full_name,
+                  approve_date: new Date().toISOString().split("T")[0],
+                }
+              : izin
+          )
+        );
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : "An Unknown error");
@@ -89,153 +90,162 @@ const TableIzin: React.FC<IzinListProps> = ({ izinsProp }) => {
     const date = new Date(datetimeString);
     return date.toISOString().split("T")[0];
   };
+  useEffect(() => {
+    fetchIzin(); // 🔹 Fetch ulang setiap kali refreshTrigger berubah
+  }, [refreshTrigger]);
   return (
-    <div className="rounded-sm border border-stroke bg-white px-12 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
-      <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
-        Data Izin
-      </h4>
+    <>
+      <ToastContainer />
+      <div className="rounded-sm border border-stroke bg-white px-12 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
+        <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
+          Data Izin
+        </h4>
 
-      <div className="flex flex-col">
-        <div className="grid max-screen grid-cols-5 rounded-sm bg-gray-2 dark:bg-meta-4 sm:grid-cols-8 text-center">
-          <div className="p-2.5 text-center xl:p-5">
-            <h5 className="text-sm font-medium uppercase xsm:text-base">No</h5>
-          </div>
-          <div className="p-2.5 text-center xl:p-5">
-            <h5 className="text-sm font-medium uppercase xsm:text-base">
-              Nama Pegawai
-            </h5>
-          </div>
-          <div className="p-2.5 text-center xl:p-5">
-            <h5 className="text-sm font-medium uppercase xsm:text-base">
-              Start Date
-            </h5>
-          </div>
-
-          <div className="p-2.5 text-center xl:p-5">
-            <h5 className="text-sm font-medium uppercase xsm:text-base">
-              End Date
-            </h5>
-          </div>
-          <div className="p-2.5 text-center xl:p-5">
-            <h5 className="text-sm font-medium uppercase xsm:text-base">
-              Alasan
-            </h5>
-          </div>
-          <div className="p-2.5 text-center xl:p-5">
-            <h5 className="text-sm font-medium uppercase xsm:text-base">
-              Status
-            </h5>
-          </div>
-          <div className="hidden max p-2.5 text-center sm:block xl:p-5">
-            <h5 className="text-sm font-medium uppercase xsm:text-base">
-              Approve
-            </h5>
-          </div>
-          <div className="hidden max p-2.5 text-center sm:block xl:p-5">
-            <h5 className="text-sm font-medium uppercase xsm:text-base">
-              Detail
-            </h5>
-          </div>
-        </div>
-        {dataIzin && dataIzin.length > 0 ? (
-          dataIzin.map((izin, index) => (
-            <div
-              className={`grid grid-cols-3 sm:grid-cols-8 ${
-                index === dataIzin.length - 1
-                  ? ""
-                  : "border-b border-stroke dark:border-strokedark"
-              }`}
-              key={izin.izin_id}
-            >
-              <div className="flex items-center gap-3 p-2.5 xl:p-5">
-                <div className="flex-shrink-0 text-center">
-                  <p className="text-black text-center dark:text-white">
-                    {index + 1}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-2.5 xl:p-5">
-                <div className="flex-shrink-0 text-center ">
-                  <p className="text-black dark:text-white">
-                    {izin.users?.full_name || "unknown"}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-center p-2.5 xl:p-2">
-                <p className="text-black dark:text-white text-center">
-                  {formatDate(izin.start_date)}
-                </p>
-              </div>
-
-              <div className="flex items-center justify-center p-2.5 xl:p-2">
-                <p className="text-black dark:text-white text-center">
-                  {formatDate(izin.end_date)}
-                </p>
-              </div>
-
-              <div className="flex items-center justify-center p-2.5 xl:p-2">
-                <p className="text-black dark:text-white text-center">
-                  {izin.alasan}
-                </p>
-              </div>
-
-              <div className="flex items-center justify-center p-2.5 xl:p-2">
-                <p
-                  className={`inline-flex items-center px-2.5 py-0.5 justify-center gap-1 rounded-full font-medium text-sm ${izin.status === 0 ? "bg-red-500" : izin.status === 1 ? "bg-green-500" : "bg-gray-500"}  text-white dark:text-white`}
-                >
-                  {izin.status === 0
-                    ? "belum di acc"
-                    : izin.status === 1
-                      ? "sudah di acc"
-                      : "status tidak diketahui"}
-                </p>
-              </div>
-
-              <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
-                <button
-                  className="rounded-sm inline-flex items-center justify-center bg-warning px-2 py-2 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-2"
-                  onClick={() => approveizin(parseInt(izin.izin_id))}
-                  disabled={izin.status === 1}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="18"
-                    height="18"
-                    className="fill-current mr-2"
-                    viewBox="0 0 512 512"
-                  >
-                    <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1 0 32c0 8.8 7.2 16 16 16l32 0zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
-                  </svg>
-                  <span>Approve</span>
-                </button>
-              </div>
-
-              <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
-                <a
-                  className="rounded-sm inline-flex items-center justify-center bg-success px-2 py-2 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-2"
-                  href="#"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 448 512"
-                    width="18"
-                    height="18"
-                    className="fill-current mr-2"
-                  >
-                    <path d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z" />
-                  </svg>
-                  <span>Details</span>
-                </a>
-              </div>
+        <div className="flex flex-col">
+          <div className="grid max-screen grid-cols-5 rounded-sm bg-gray-2 dark:bg-meta-4 sm:grid-cols-8 text-center">
+            <div className="p-2.5 text-center xl:p-5">
+              <h5 className="text-sm font-medium uppercase xsm:text-base">
+                No
+              </h5>
             </div>
-          ))
-        ) : (
-          <p>Loading.....</p>
-        )}
-        {error && <p style={{ color: "red" }}>{error}</p>}
+            <div className="p-2.5 text-center xl:p-5">
+              <h5 className="text-sm font-medium uppercase xsm:text-base">
+                Nama Pegawai
+              </h5>
+            </div>
+            <div className="p-2.5 text-center xl:p-5">
+              <h5 className="text-sm font-medium uppercase xsm:text-base">
+                Start Date
+              </h5>
+            </div>
+
+            <div className="p-2.5 text-center xl:p-5">
+              <h5 className="text-sm font-medium uppercase xsm:text-base">
+                End Date
+              </h5>
+            </div>
+            <div className="p-2.5 text-center xl:p-5">
+              <h5 className="text-sm font-medium uppercase xsm:text-base">
+                Alasan
+              </h5>
+            </div>
+            <div className="p-2.5 text-center xl:p-5">
+              <h5 className="text-sm font-medium uppercase xsm:text-base">
+                Status
+              </h5>
+            </div>
+            <div className="hidden max p-2.5 text-center sm:block xl:p-5">
+              <h5 className="text-sm font-medium uppercase xsm:text-base">
+                Approve
+              </h5>
+            </div>
+            <div className="hidden max p-2.5 text-center sm:block xl:p-5">
+              <h5 className="text-sm font-medium uppercase xsm:text-base">
+                Detail
+              </h5>
+            </div>
+          </div>
+          {dataIzin && dataIzin.length > 0 ? (
+            dataIzin.map((izin, index) => (
+              <div
+                className={`grid grid-cols-3 sm:grid-cols-8 ${
+                  index === dataIzin.length - 1
+                    ? ""
+                    : "border-b border-stroke dark:border-strokedark"
+                }`}
+                key={izin.izin_id}
+              >
+                <div className="flex items-center gap-3 p-2.5 xl:p-5">
+                  <div className="flex-shrink-0 text-center">
+                    <p className="text-black text-center dark:text-white">
+                      {index + 1}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-2.5 xl:p-5">
+                  <div className="flex-shrink-0 text-center ">
+                    <p className="text-black dark:text-white">
+                      {izin.users?.full_name || "unknown"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-center p-2.5 xl:p-2">
+                  <p className="text-black dark:text-white text-center">
+                    {formatDate(izin.start_date)}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-center p-2.5 xl:p-2">
+                  <p className="text-black dark:text-white text-center">
+                    {formatDate(izin.end_date)}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-center p-2.5 xl:p-2">
+                  <p className="text-black dark:text-white text-center">
+                    {izin.alasan}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-center p-2.5 xl:p-2">
+                  <p
+                    className={`inline-flex items-center px-2.5 py-0.5 justify-center gap-1 rounded-full font-medium text-sm ${izin.status === 0 ? "bg-red-500" : izin.status === 1 ? "bg-green-500" : "bg-gray-500"}  text-white dark:text-white`}
+                  >
+                    {izin.status === 0
+                      ? "belum di acc"
+                      : izin.status === 1
+                        ? "sudah di acc"
+                        : "status tidak diketahui"}
+                  </p>
+                </div>
+
+                <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
+                  <button
+                    className={`rounded-sm inline-flex items-center justify-center px-2 py-2 text-center font-medium text-white lg:px-8 xl:px-2 
+      ${izin.status === 1 ? "bg-gray-400 cursor-not-allowed" : "bg-warning hover:bg-opacity-90"}`}
+                    onClick={() => approveizin(parseInt(izin.izin_id))}
+                    disabled={izin.status === 1}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="18"
+                      className="fill-current mr-2"
+                      viewBox="0 0 512 512"
+                    >
+                      <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1 0 32c0 8.8 7.2 16 16 16l32 0zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
+                    </svg>
+                    <span>Approve</span>
+                  </button>
+                </div>
+
+                <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
+                  <a
+                    className="rounded-sm inline-flex items-center justify-center bg-success px-2 py-2 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-2"
+                    href="#"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 448 512"
+                      width="18"
+                      height="18"
+                      className="fill-current mr-2"
+                    >
+                      <path d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z" />
+                    </svg>
+                    <span>Details</span>
+                  </a>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p>Loading.....</p>
+          )}
+          {error && <p style={{ color: "red" }}>{error}</p>}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
