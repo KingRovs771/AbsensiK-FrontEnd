@@ -53,11 +53,14 @@ const ScheduleFormPage: React.FC = () => {
   const SaveDataSchedules = async () => {
     const schedules = {};
     try {
-      const schedulesResponse = await fetch("", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(schedules),
-      });
+      const schedulesResponse = await fetch(
+        "http://localhost:8080/v1/schdules/insertSchedules",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(schedules),
+        }
+      );
       if (!schedulesResponse.ok) {
         throw new Error(`HTTP Error! Status : ${schedulesResponse.status}`);
       }
