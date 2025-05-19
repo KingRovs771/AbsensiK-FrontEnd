@@ -9,7 +9,7 @@ import "react-toastify/dist/ReactToastify.css";
 const TableGaji = () => {
   const [dataSalary, setSalary] = useState<Salary[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [successMessage] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string>("");
   const [refreshTrigger, setRefreshTrigger] = useState(false);
 

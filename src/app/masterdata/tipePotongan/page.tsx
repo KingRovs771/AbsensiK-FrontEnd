@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import DefaultLayout from "@/components/Layouts/MainLayout";
-import TableDepartements from "@/components/Tables/TableDepartements";
+import TableTipePotongan from "@/components/Tables/TableTipePotongan";
 
 export const metadata: Metadata = {
   title: "Data Tipe Potongan Page | Absensi Karyawan PT Alma",
@@ -28,7 +28,7 @@ const DepartementsPage: React.FC = () => {
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">
         <div className="flex flex-col gap-9">
           <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-            <TableDepartements></TableDepartements>
+            <TableTipePotongan></TableTipePotongan>
           </div>
         </div>
       </div>
