@@ -1,8 +1,9 @@
 export type Potongan = {
-  potongan_id: string;
+  potongan_id: number;
   user_uid: string;
   month: string;
-  year: string;
-  tipe_potongan: string;
-  nilai_potongan: number;
+  year: number;
+  tipe_potongan: number;
+  full_name: string;
+  name_potongan: string;
 };

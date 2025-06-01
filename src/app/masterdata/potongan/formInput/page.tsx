@@ -19,7 +19,7 @@ const InsertSalary = () => {
     }
 
     console.log("Sending Data:", {
-      user_uid: userUID, 
+      user_uid: userUID,
       month,
       year: parseInt(year, 10),
     });

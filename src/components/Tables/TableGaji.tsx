@@ -23,7 +23,6 @@ const TableGaji = () => {
 
         console.log("Selected Month:", selectedMonth);
         const apiResponse: ApiResponse<Salary[]> = await salaryResponse.json();
-        console.log("API Response:", apiResponse);
         setSalary(apiResponse.Data);
         setRefreshTrigger((prev) => !prev);
       } catch (error) {
