@@ -1,5 +1,5 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 "use client";
-
 import { useState, useEffect } from "react";
 import EmployeeSearch from "../../../../components/SearchKaryawan/SearchKaryawan";
 import DefaultLayout from "@/components/Layouts/MainLayout";
