@@ -1,26 +1,26 @@
 "use client";
-
-import { Departement } from "@/types/Departement";
 import { ApiResponse } from "@/types/ApiResponse";
 import { useState, useEffect } from "react";
+import { Attendances } from "@/types/Attendances";
 
 const TableAbsensi = () => {
-  const [dataDepartements, setDepartements] = useState<Departement[]>([]);
+  const [dataAbensi, setAbsensi] = useState<Attendances[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAbsensi = async () => {
       try {
-        const departementsResponse = await fetch(
-          "http://localhost:8080/v1/departements/AllDepartements"
+        const absensiResponse = await fetch(
+          "http://localhost:8080/v1/attendances/getAllAttendances"
         );
-        if (!departementsResponse.ok) {
+        if (!absensiResponse.ok) {
           throw new Error("Http Error! Status : ${response.status}");
         }
-        const apiResponse: ApiResponse<Departement[]> =
-          await departementsResponse.json();
+        const apiResponse: ApiResponse<Attendances[]> =
+          await absensiResponse.json();
+
         if (apiResponse.Status === "Success") {
-          setDepartements(apiResponse.Data);
+          setAbsensi(apiResponse.Data);
         } else {
           throw new Error(apiResponse.Message || "Unknown error from server");
         }
@@ -64,15 +64,15 @@ const TableAbsensi = () => {
             </h5>
           </div>
         </div>
-        {dataDepartements && dataDepartements.length > 0 ? (
-          dataDepartements.map((departements, index) => (
+        {dataAbensi && dataAbensi.length > 0 ? (
+          dataAbensi.map((Attendances, index) => (
             <div
               className={`grid grid-cols-3 sm:grid-cols-5 ${
-                index === dataDepartements.length - 1
+                index === dataAbensi.length - 1
                   ? ""
                   : "border-b border-stroke dark:border-strokedark"
               }`}
-              key={departements.departments_id}
+              key={Attendances.kehadiran_id}
             >
               <div className="flex items-center gap-3 p-2.5 xl:p-5">
                 <div className="flex-shrink-0 text-center">
@@ -119,7 +119,7 @@ const TableAbsensi = () => {
         ) : (
           <p>Loading.....</p>
         )}
-        ;{error && <p style={{ color: "red" }}>{error}</p>}
+        {error && <p style={{ color: "red" }}>{error}</p>}
       </div>
     </div>
   );

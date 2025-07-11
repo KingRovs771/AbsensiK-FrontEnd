@@ -56,7 +56,7 @@ const useAuth = (): AuthInfo | null => {
         setAuthInfo({
           fullName: data.fullName || "",
           email: data.email || "",
-          role: data.roel || "",
+          role: data.role || "",
           ...data,
         });
       } catch (error) {
