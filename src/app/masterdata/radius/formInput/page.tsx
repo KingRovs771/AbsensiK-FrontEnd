@@ -47,7 +47,10 @@ const FormRadiusPage: React.FC = () => {
       SetLatitude("");
       SetLongitude("");
     } catch (error) {
-      toast.error("Gagal menyimpan data!", { autoClose: 3000 });
+      toast.error("Gagal menyimpan data! ", {
+        autoClose: 3000,
+      });
+      console.error(error);
       SetError(
         error instanceof Error ? error.message : "An Unknown Error Occured"
       );
