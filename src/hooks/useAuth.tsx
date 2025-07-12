@@ -12,6 +12,9 @@ interface Role {
 interface AuthInfo {
   full_name: string;
   email: string;
+  phone: string;
+  address: string;
+  username: string;
   role: Role;
   [key: string]: any;
 }

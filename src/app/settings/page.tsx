@@ -1,15 +1,11 @@
+"use client";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import Image from "next/image";
-import { Metadata } from "next";
 import DefaultLayout from "@/components/Layouts/MainLayout";
-
-export const metadata: Metadata = {
-  title: "Next.js Settings | TailAdmin - Next.js Dashboard Template",
-  description:
-    "This is Next.js Settings page for TailAdmin - Next.js Tailwind CSS Admin Dashboard Template",
-};
+import useAuth from "@/hooks/useAuth";
 
 const Settings = () => {
+  const authInfo = useAuth();
   return (
     <DefaultLayout>
       <div className="mx-auto max-w-270">
@@ -65,7 +61,7 @@ const Settings = () => {
                           name="fullName"
                           id="fullName"
                           placeholder="Devid Jhon"
-                          defaultValue="Devid Jhon"
+                          defaultValue={authInfo?.full_name}
                         />
                       </div>
                     </div>
@@ -83,7 +79,7 @@ const Settings = () => {
                         name="phoneNumber"
                         id="phoneNumber"
                         placeholder="+990 3343 7865"
-                        defaultValue="+990 3343 7865"
+                        defaultValue={authInfo?.phone}
                       />
                     </div>
                   </div>
@@ -127,7 +123,7 @@ const Settings = () => {
                         name="emailAddress"
                         id="emailAddress"
                         placeholder="devidjond45@gmail.com"
-                        defaultValue="devidjond45@gmail.com"
+                        defaultValue={authInfo?.email}
                       />
                     </div>
                   </div>
@@ -145,7 +141,7 @@ const Settings = () => {
                       name="Username"
                       id="Username"
                       placeholder="devidjhon24"
-                      defaultValue="devidjhon24"
+                      defaultValue={authInfo?.username}
                     />
                   </div>
 
@@ -154,7 +150,7 @@ const Settings = () => {
                       className="mb-3 block text-sm font-medium text-black dark:text-white"
                       htmlFor="Username"
                     >
-                      BIO
+                      Address
                     </label>
                     <div className="relative">
                       <span className="absolute left-4.5 top-4">
@@ -194,7 +190,7 @@ const Settings = () => {
                         id="bio"
                         rows={6}
                         placeholder="Write your bio here"
-                        defaultValue="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque posuere fermentum urna, eu condimentum mauris tempus ut. Donec fermentum blandit aliquet."
+                        defaultValue={authInfo?.address}
                       ></textarea>
                     </div>
                   </div>
