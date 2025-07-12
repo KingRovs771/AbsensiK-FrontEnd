@@ -2,7 +2,6 @@
 import React from "react";
 import ChatCard from "../Chat/ChatCard";
 import TableOne from "../Tables/TableUsers";
-import Calendar from "../Calender";
 import DashboardStatsView from "../CardDataStats";
 
 const Dashboard: React.FC = () => {
@@ -17,9 +16,6 @@ const Dashboard: React.FC = () => {
           <TableOne />
         </div>
         <ChatCard />
-        <div className="col-span-12 xl:col-span-12">
-          <Calendar />
-        </div>
       </div>
     </>
   );

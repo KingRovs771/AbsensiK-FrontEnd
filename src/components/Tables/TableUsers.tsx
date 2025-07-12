@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { Users } from "@/types/Users";
 import { useEffect, useState } from "react";
 import { ApiResponse } from "@/types/ApiResponse";
@@ -53,12 +52,7 @@ const TableUsers = () => {
         <span>Insert User</span>
       </a>
       <div className="flex flex-col">
-        <div className="grid max-screen grid-cols-6 rounded-sm bg-gray-2 dark:bg-meta-4 sm:grid-cols-6 text-center">
-          <div className="p-2.5 xl:p-5">
-            <h5 className="text-sm font-medium uppercase xsm:text-base">
-              Foto
-            </h5>
-          </div>
+        <div className="grid max-screen grid-cols-6 rounded-sm bg-gray-2 dark:bg-meta-4 sm:grid-cols-5 text-center">
           <div className="p-2.5 text-center xl:p-5">
             <h5 className="text-sm font-medium uppercase xsm:text-base">
               Nama Lengkap
@@ -89,24 +83,13 @@ const TableUsers = () => {
         {dataUsers && dataUsers.length > 0 ? (
           dataUsers.map((users, index) => (
             <div
-              className={`grid grid-cols-3 sm:grid-cols-6 ${
+              className={`grid grid-cols-3 sm:grid-cols-5 ${
                 index === dataUsers.length - 1
                   ? ""
                   : "border-b border-stroke dark:border-strokedark"
               }`}
               key={users.user_id}
             >
-              <div className="flex items-center gap-3 p-2.5 xl:p-5">
-                <div className="flex-shrink-0 text-center ">
-                  <Image
-                    src={users.user_id}
-                    alt="Brand"
-                    width={100}
-                    height={100}
-                  />
-                </div>
-              </div>
-
               <div className="flex items-center justify-center p-2.5 xl:p-2">
                 <p className="text-black dark:text-white text-center">
                   {users.full_name}

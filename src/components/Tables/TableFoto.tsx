@@ -9,6 +9,9 @@ import { Faces } from "@/types/Faces";
 const TableFoto = () => {
   const [faces, setFaces] = useState<Faces[]>([]);
 
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
   useEffect(() => {
     const fetchFaces = async () => {
       try {
@@ -31,6 +34,33 @@ const TableFoto = () => {
 
     fetchFaces();
   }, []);
+
+  const handlerFotoDelete = async (FaceId: string) => {
+    try {
+      const FotoResponse = await fetch(
+        `http://localhost:8080/v1/radius/deleteRadius/${FaceId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (!FotoResponse.ok) {
+        throw new Error(`HTTP Error! Status : ${FotoResponse.status}`);
+      }
+      const result = await FotoResponse.json();
+
+      toast.success("Sukses Menghapus Data!", { autoClose: 3000 });
+      setSuccessMessage(result.message);
+      setFaces(faces?.filter((face) => face.face_id !== FaceId));
+    } catch (error) {
+      toast.error("Gagal Menghapus Data!", { autoClose: 3000 });
+      setError(
+        error instanceof Error ? error.message : "An unknown error occurred"
+      );
+    }
+  };
   return (
     <>
       <ToastContainer />
@@ -147,9 +177,9 @@ const TableFoto = () => {
                 </div>
 
                 <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
-                  <a
+                  <button
+                    onClick={() => handlerFotoDelete(face.face_id)}
                     className="rounded-sm inline-flex items-center justify-center bg-danger px-2 py-2 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-2"
-                    href="#"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -161,13 +191,15 @@ const TableFoto = () => {
                       <path d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z" />
                     </svg>
                     <span>Delete</span>
-                  </a>
+                  </button>
                 </div>
               </div>
             ))
           ) : (
             <p>Loading.....</p>
           )}
+          {error && <p style={{ color: "red" }}>{error}</p>}
+          {successMessage && <p className="text-green-500">{successMessage}</p>}
         </div>
       </div>
     </>
