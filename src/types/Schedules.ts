@@ -1,4 +1,4 @@
-import { Users } from "./Users";
+import { Users } from './users';
 
 export type Schedules = {
   schedule_id: string;
@@ -8,5 +8,6 @@ export type Schedules = {
   day: string;
   is_active: number;
   full_name: string;
+
   user: Users;
 };
