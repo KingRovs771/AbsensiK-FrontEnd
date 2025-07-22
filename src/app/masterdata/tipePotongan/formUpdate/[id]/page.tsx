@@ -5,63 +5,82 @@ import { useRouter } from "next/navigation";
 import DefaultLayout from "@/components/Layouts/MainLayout";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import { ApiResponse } from "@/types/ApiResponse";
-import { Departement } from "@/types/Departement";
+import { Tipe_potongan } from "@/types/Tipe_potongan"; // Pastikan tipe ini ada dan sesuai
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const FormUpdateDepartments = ({ params }: { params: { id: string } }) => {
+const FormUpdateTipePotongan = ({ params }: { params: { id: string } }) => {
   const router = useRouter();
-  const { id } = params; // Ambil ID dari params
+  const { id } = params; // Ambil ID dari URL
 
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
+  // State untuk menampung data form Tipe Potongan
+  const [tipePotonganData, setTipePotonganData] = useState<
+    Partial<Tipe_potongan>
+  >({
+    name_potongan: "",
+    nilai_potongan: 0,
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // useEffect untuk mengambil data Tipe Potongan yang akan di-edit
   useEffect(() => {
-    if (!id) return; // Jangan lakukan apa-apa jika ID belum ada
+    if (!id) return;
 
-    const fetchDepartmentData = async () => {
+    const fetchTipePotonganData = async () => {
       setIsLoading(true);
       try {
         const response = await fetch(
-          `http://localhost:8080/v1/departements/getDepartementsById/${id}`
+          `http://localhost:8080/v1/tipePotongan/getTipeById/${id}`
         );
         if (!response.ok) {
-          throw new Error("Gagal mengambil data departemen");
+          throw new Error("Gagal mengambil data Tipe Potongan");
         }
-        const apiResponse: ApiResponse<Departement> = await response.json();
+        const apiResponse: ApiResponse<Tipe_potongan> = await response.json();
         if (apiResponse.Status === "Success") {
-          const dept = apiResponse.Data;
-          setName(dept.name_departments);
-          setDescription(dept.description);
+          setTipePotonganData(apiResponse.Data);
         } else {
           throw new Error(apiResponse.Message || "Gagal memuat data");
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Terjadi kesalahan");
-        toast.error(err instanceof Error ? err.message : "Terjadi kesalahan");
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Terjadi kesalahan tidak diketahui";
+        setError(message);
+        toast.error(message);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchDepartmentData();
-  }, [id]); // useEffect akan berjalan lagi jika ID berubah
+    fetchTipePotonganData();
+  }, [id]); // Jalankan lagi jika ID berubah
 
+  // Handler umum untuk perubahan pada input form
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setTipePotonganData((prevData) => ({
+      ...prevData,
+      [name]: name === "nilai_potongan" ? parseFloat(value) || 0 : value,
+    }));
+  };
+
+  // Fungsi untuk mengirim data yang sudah diubah ke server
   const handleUpdate = async () => {
     setIsLoading(true);
     setError(null);
 
+    // Siapkan data untuk dikirim ke API
     const updatedData = {
-      departments_id: id,
-      name_departments: name,
-      description: description,
+      tipe_potongan_id: tipePotonganData.tipe_potongan_id, // Pastikan ID dikirim sebagai angka
+      name_potongan: tipePotonganData.name_potongan,
+      nilai_potongan: tipePotonganData.nilai_potongan,
     };
 
     try {
       const response = await fetch(
-        `http://localhost:8080/v1/departements/updateDepartements/${id}`,
+        `http://localhost:8080/v1/tipePotongan/updateTipePotongan/${id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -76,13 +95,16 @@ const FormUpdateDepartments = ({ params }: { params: { id: string } }) => {
       }
 
       toast.success(result.Message || "Data berhasil diperbarui!");
+
       // Arahkan kembali ke halaman tabel setelah 2 detik
       setTimeout(() => {
-        router.push("/masterdata/departements");
+        router.push("/masterdata/tipePotongan"); // Sesuaikan path jika perlu
       }, 2000);
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : "Terjadi kesalahan";
+        err instanceof Error
+          ? err.message
+          : "Terjadi kesalahan tidak diketahui";
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -94,44 +116,52 @@ const FormUpdateDepartments = ({ params }: { params: { id: string } }) => {
     <>
       <ToastContainer />
       <DefaultLayout>
-        <Breadcrumb pageName="Form Update Departemen" />
+        <Breadcrumb pageName="Form Update Tipe Potongan" />
         <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
           <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
             <h3 className="font-medium text-black dark:text-white">
-              Update Departemen: {id}
+              Update Tipe Potongan: {tipePotonganData.name_potongan}
             </h3>
           </div>
           {isLoading ? (
             <div className="p-6.5 text-center">Loading data...</div>
           ) : (
             <div className="p-6.5">
-              {error && <div className="mb-4 text-red-500">{error}</div>}
+              {error && (
+                <div className="mb-4 rounded bg-danger/10 p-3 text-center text-danger">
+                  {error}
+                </div>
+              )}
               <div className="mb-4.5">
                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                  Nama Departemen
+                  Nama Potongan
                 </label>
                 <input
                   type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  name="name_potongan"
+                  value={tipePotonganData.name_potongan || ""}
+                  onChange={handleChange}
                   className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3"
                 />
               </div>
+
               <div className="mb-6">
                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                  Deskripsi
+                  Nilai Potongan (Rp)
                 </label>
-                <textarea
-                  rows={4}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                <input
+                  type="number"
+                  name="nilai_potongan"
+                  value={tipePotonganData.nilai_potongan || 0}
+                  onChange={handleChange}
                   className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3"
-                ></textarea>
+                />
               </div>
+
               <button
                 onClick={handleUpdate}
                 disabled={isLoading}
-                className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-90 disabled:cursor-not-allowed"
+                className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isLoading ? "Menyimpan..." : "Update Data"}
               </button>
@@ -143,4 +173,4 @@ const FormUpdateDepartments = ({ params }: { params: { id: string } }) => {
   );
 };
 
-export default FormUpdateDepartments;
+export default FormUpdateTipePotongan;

@@ -151,7 +151,7 @@ const TableTipePotongan = () => {
                 <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
                   <a
                     className="rounded-sm inline-flex items-center justify-center bg-warning px-2 py-2 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-2"
-                    href="#"
+                    href={`/masterdata/tipePotongan/formUpdate/${tipePotongan.tipe_potongan_id}`}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { Izin } from "@/types/Izin";
@@ -7,15 +8,130 @@ import useAuth from "@/hooks/useAuth";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-interface IzinListProps {
-  izinsProp: Izin[];
+// ===================================================================
+// Komponen Modal untuk Menampilkan Detail Izin
+// ===================================================================
+interface ModalDetailProps {
+  izin: Izin;
+  onClose: () => void;
 }
 
-const TableIzin: React.FC<IzinListProps> = ({ izinsProp }) => {
-  const [dataIzin, setDataIzin] = useState<Izin[]>(izinsProp);
+const ModalDetailIzin: React.FC<ModalDetailProps> = ({ izin, onClose }) => {
+  const handleContentClick = (e: React.MouseEvent) => e.stopPropagation();
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60"
+      onClick={onClose}
+    >
+      {/* Konten Modal */}
+      <div
+        className="relative w-full max-w-2xl transform rounded-lg bg-white p-6 shadow-default transition-all dark:bg-boxdark"
+        onClick={handleContentClick}
+      >
+        {/* Header Modal dengan Tombol Close */}
+        <div className="flex items-start justify-between border-b border-stroke pb-4 dark:border-strokedark">
+          <h3 className="text-xl font-semibold text-black dark:text-white">
+            Detail Pengajuan Izin
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-2xl font-bold leading-none text-black hover:text-danger dark:text-white"
+          >
+            &times;
+          </button>
+        </div>
+
+        {/* Body Modal */}
+        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div>
+            <p className="font-medium text-black dark:text-white">
+              Nama Pegawai:
+            </p>
+            <p>{izin.users?.full_name || "Tidak ada data"}</p>
+          </div>
+          <div>
+            <p className="font-medium text-black dark:text-white">Alasan:</p>
+            <p>{izin.alasan}</p>
+          </div>
+          <div>
+            <p className="font-medium text-black dark:text-white">
+              Tanggal Mulai:
+            </p>
+            <p>{new Date(izin.start_date).toLocaleDateString("id-ID")}</p>
+          </div>
+          <div>
+            <p className="font-medium text-black dark:text-white">
+              Tanggal Selesai:
+            </p>
+            <p>{new Date(izin.end_date).toLocaleDateString("id-ID")}</p>
+          </div>
+          <div>
+            <p className="font-medium text-black dark:text-white">Status:</p>
+            <span
+              className={`inline-flex rounded-full px-3 py-1 text-sm font-medium text-white ${
+                izin.status === 1
+                  ? "bg-green-500" // Status 1: Disetujui (Hijau)
+                  : izin.status === 2
+                    ? "bg-red-500" // Status 2: Ditolak (Merah)
+                    : "bg-yellow-500" // Status 0 atau lainnya: Menunggu (Kuning)
+              }`}
+            >
+              {izin.status === 1
+                ? "Disetujui"
+                : izin.status === 2
+                  ? "Ditolak"
+                  : "Menunggu Persetujuan"}
+            </span>
+          </div>
+          {izin.status === 1 && (
+            <>
+              <div>
+                <p className="font-medium text-black dark:text-white">
+                  Disetujui Oleh:
+                </p>
+                <p>{izin.approve_by}</p>
+              </div>
+              <div>
+                <p className="font-medium text-black dark:text-white">
+                  Tanggal Disetujui:
+                </p>
+                <p>{new Date(izin.approve_at).toLocaleDateString("id-ID")}</p>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Bagian untuk menampilkan foto bukti dari Base64 */}
+        {izin.alasan.toLowerCase() === "sakit" && izin.foto && (
+          <div className="mt-4 border-t border-stroke pt-4 dark:border-strokedark">
+            <h4 className="mb-2 font-semibold text-black dark:text-white">
+              Bukti Foto Sakit:
+            </h4>
+            <img
+              src={`data:image/jpeg;base64,${izin.foto}`}
+              alt={`Bukti sakit ${izin.users?.full_name}`}
+              className="w-full max-w-sm rounded-md object-contain"
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ===================================================================
+// Komponen Utama Tabel Izin
+// ===================================================================
+const TableIzin: React.FC = () => {
+  const [dataIzin, setDataIzin] = useState<Izin[]>([]);
   const [error, setError] = useState<string | null>(null);
   const authInfo = useAuth();
   const [refreshTrigger, setRefreshTrigger] = useState(false);
+
+  // State untuk mengelola modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedIzin, setSelectedIzin] = useState<Izin | null>(null);
 
   const fetchIzin = async () => {
     try {
@@ -31,7 +147,7 @@ const TableIzin: React.FC<IzinListProps> = ({ izinsProp }) => {
       }
     } catch (error) {
       setError(
-        error instanceof Error ? error.message : "An Unknown error eccurred"
+        error instanceof Error ? error.message : "An Unknown error occurred"
       );
       console.log(error);
     }
@@ -39,7 +155,7 @@ const TableIzin: React.FC<IzinListProps> = ({ izinsProp }) => {
 
   const approveizin = async (izinId: number) => {
     if (!authInfo) {
-      console.error("User Information not loaded");
+      toast.error("Informasi user tidak ditemukan, silahkan login ulang.");
       return;
     }
     try {
@@ -57,30 +173,54 @@ const TableIzin: React.FC<IzinListProps> = ({ izinsProp }) => {
       if (!approveResponse.ok) {
         throw new Error(`HTTP Error! Status : ${approveResponse.status}`);
       }
-      const ApiResponse: ApiResponse<Izin> = await approveResponse.json();
-      console.log("Approval Response:", ApiResponse);
-      toast.success("Izin berhasil di-approve!", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-
-      setRefreshTrigger((prev) => !prev);
-      if (ApiResponse.Status === "Success") {
-        setDataIzin((prevIzins) =>
-          prevIzins.map((izin) =>
-            parseInt(izin.izin_id, 10) === izinId
-              ? {
-                  ...izin,
-                  status: 1,
-                  approve_by: authInfo.full_name,
-                  approve_date: new Date().toISOString().split("T")[0],
-                }
-              : izin
-          )
-        );
+      const apiResponse: ApiResponse<Izin> = await approveResponse.json();
+      if (apiResponse.Status !== "Success") {
+        throw new Error(apiResponse.Message || "Gagal melakukan approval");
       }
+
+      toast.success("Izin berhasil di-approve!");
+      setRefreshTrigger((prev) => !prev); // Memicu re-fetch data
     } catch (error) {
       setError(error instanceof Error ? error.message : "An Unknown error");
+      toast.error(
+        error instanceof Error ? error.message : "Gagal melakukan approval"
+      );
+      console.log(error);
+    }
+  };
+
+  const rejectedizin = async (izinId: number) => {
+    if (!authInfo) {
+      toast.error("Informasi user tidak ditemukan, silahkan login ulang.");
+      return;
+    }
+    try {
+      const approveResponse = await fetch(
+        `http://localhost:8080/v1/izin/${izinId}/reject`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "X-Full-Name": authInfo.full_name,
+          },
+        }
+      );
+      if (!approveResponse.ok) {
+        throw new Error(`HTTP Error! Status : ${approveResponse.status}`);
+      }
+      const apiResponse: ApiResponse<Izin> = await approveResponse.json();
+      if (apiResponse.Status !== "Success") {
+        throw new Error(apiResponse.Message || "Gagal melakukan approval");
+      }
+
+      toast.success("Izin berhasil di-Recjected!");
+      setRefreshTrigger((prev) => !prev);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "An Unknown error");
+      toast.error(
+        error instanceof Error ? error.message : "Gagal melakukan approval"
+      );
       console.log(error);
     }
   };
@@ -90,56 +230,72 @@ const TableIzin: React.FC<IzinListProps> = ({ izinsProp }) => {
     const date = new Date(datetimeString);
     return date.toISOString().split("T")[0];
   };
+
   useEffect(() => {
-    fetchIzin(); // 🔹 Fetch ulang setiap kali refreshTrigger berubah
+    fetchIzin();
   }, [refreshTrigger]);
+
+  // Fungsi untuk membuka dan menutup modal
+  const handleOpenModal = (izin: Izin) => {
+    setSelectedIzin(izin);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedIzin(null);
+  };
+
   return (
     <>
       <ToastContainer />
       <div className="rounded-sm border border-stroke bg-white px-12 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
         <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
-          Data Izin
+          Data Izin Karyawan
         </h4>
-
         <div className="flex flex-col">
-          <div className="grid max-screen grid-cols-5 rounded-sm bg-gray-2 dark:bg-meta-4 sm:grid-cols-8 text-center">
-            <div className="p-2.5 text-center xl:p-5">
+          <div className="grid grid-cols-9 rounded-sm bg-gray-2 dark:bg-meta-4 text-center">
+            <div className="p-2.5 xl:p-5">
               <h5 className="text-sm font-medium uppercase xsm:text-base">
                 No
               </h5>
             </div>
-            <div className="p-2.5 text-center xl:p-5">
+            <div className="p-2.5 xl:p-5">
               <h5 className="text-sm font-medium uppercase xsm:text-base">
                 Nama Pegawai
               </h5>
             </div>
-            <div className="p-2.5 text-center xl:p-5">
+            <div className="p-2.5 xl:p-5">
               <h5 className="text-sm font-medium uppercase xsm:text-base">
                 Start Date
               </h5>
             </div>
-
-            <div className="p-2.5 text-center xl:p-5">
+            <div className="p-2.5 xl:p-5">
               <h5 className="text-sm font-medium uppercase xsm:text-base">
                 End Date
               </h5>
             </div>
-            <div className="p-2.5 text-center xl:p-5">
+            <div className="p-2.5 xl:p-5">
               <h5 className="text-sm font-medium uppercase xsm:text-base">
                 Alasan
               </h5>
             </div>
-            <div className="p-2.5 text-center xl:p-5">
+            <div className="p-2.5 xl:p-5">
               <h5 className="text-sm font-medium uppercase xsm:text-base">
                 Status
               </h5>
             </div>
-            <div className="hidden max p-2.5 text-center sm:block xl:p-5">
+            <div className="p-2.5 xl:p-5">
               <h5 className="text-sm font-medium uppercase xsm:text-base">
                 Approve
               </h5>
             </div>
-            <div className="hidden max p-2.5 text-center sm:block xl:p-5">
+            <div className="p-2.5 xl:p-5">
+              <h5 className="text-sm font-medium uppercase xsm:text-base">
+                Rejected
+              </h5>
+            </div>
+            <div className="p-2.5 xl:p-5">
               <h5 className="text-sm font-medium uppercase xsm:text-base">
                 Detail
               </h5>
@@ -148,103 +304,88 @@ const TableIzin: React.FC<IzinListProps> = ({ izinsProp }) => {
           {dataIzin && dataIzin.length > 0 ? (
             dataIzin.map((izin, index) => (
               <div
-                className={`grid grid-cols-3 sm:grid-cols-8 ${
-                  index === dataIzin.length - 1
-                    ? ""
-                    : "border-b border-stroke dark:border-strokedark"
-                }`}
+                className={`grid grid-cols-9 ${index === dataIzin.length - 1 ? "" : "border-b border-stroke dark:border-strokedark"}`}
                 key={izin.izin_id}
               >
-                <div className="flex items-center gap-3 p-2.5 xl:p-5">
-                  <div className="flex-shrink-0 text-center">
-                    <p className="text-black text-center dark:text-white">
-                      {index + 1}
-                    </p>
-                  </div>
+                <div className="flex items-center justify-center p-2.5">
+                  <p className="text-black dark:text-white">{index + 1}</p>
                 </div>
-                <div className="flex items-center gap-3 p-2.5 xl:p-5">
-                  <div className="flex-shrink-0 text-center ">
-                    <p className="text-black dark:text-white">
-                      {izin.users?.full_name || "unknown"}
-                    </p>
-                  </div>
+                <div className="flex items-center justify-center p-2.5">
+                  <p className="text-black dark:text-white">
+                    {izin.users?.full_name || "unknown"}
+                  </p>
                 </div>
-
-                <div className="flex items-center justify-center p-2.5 xl:p-2">
-                  <p className="text-black dark:text-white text-center">
+                <div className="flex items-center justify-center p-2.5">
+                  <p className="text-black dark:text-white">
                     {formatDate(izin.start_date)}
                   </p>
                 </div>
-
-                <div className="flex items-center justify-center p-2.5 xl:p-2">
-                  <p className="text-black dark:text-white text-center">
+                <div className="flex items-center justify-center p-2.5">
+                  <p className="text-black dark:text-white">
                     {formatDate(izin.end_date)}
                   </p>
                 </div>
-
-                <div className="flex items-center justify-center p-2.5 xl:p-2">
-                  <p className="text-black dark:text-white text-center">
-                    {izin.alasan}
-                  </p>
+                <div className="flex items-center justify-center p-2.5">
+                  <p className="text-black dark:text-white">{izin.alasan}</p>
                 </div>
-
-                <div className="flex items-center justify-center p-2.5 xl:p-2">
+                <div className="flex items-center justify-center p-2.5">
                   <p
-                    className={`inline-flex items-center px-2.5 py-0.5 justify-center gap-1 rounded-full font-medium text-sm ${izin.status === 0 ? "bg-red-500" : izin.status === 1 ? "bg-green-500" : "bg-gray-500"}  text-white dark:text-white`}
+                    className={`inline-flex rounded-full bg-opacity-90 px-3 py-1 text-sm font-medium text-white ${
+                      izin.status === 1
+                        ? "bg-success" // Status 1: Disetujui (Hijau)
+                        : izin.status === 2
+                          ? "bg-danger" // Status 2: Ditolak (Merah)
+                          : "bg-warning" // Status 0 atau lainnya: Menunggu (Kuning)
+                    }`}
                   >
-                    {izin.status === 0
-                      ? "belum di acc"
-                      : izin.status === 1
-                        ? "sudah di acc"
-                        : "status tidak diketahui"}
+                    {izin.status === 1
+                      ? "Disetujui"
+                      : izin.status === 2
+                        ? "Ditolak"
+                        : "Menunggu"}
                   </p>
                 </div>
-
-                <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
+                <div className="flex items-center justify-center p-2.5">
                   <button
-                    className={`rounded-sm inline-flex items-center justify-center px-2 py-2 text-center font-medium text-white lg:px-8 xl:px-2 
-      ${izin.status === 1 ? "bg-gray-400 cursor-not-allowed" : "bg-warning hover:bg-opacity-90"}`}
                     onClick={() => approveizin(parseInt(izin.izin_id))}
                     disabled={izin.status === 1}
+                    className={`rounded-sm px-4 py-2 font-medium text-white ${izin.status === 1 ? "bg-gray-400 cursor-not-allowed" : "bg-warning hover:bg-opacity-90"}`}
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      className="fill-current mr-2"
-                      viewBox="0 0 512 512"
-                    >
-                      <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1 0 32c0 8.8 7.2 16 16 16l32 0zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
-                    </svg>
-                    <span>Approve</span>
+                    Approve
                   </button>
                 </div>
-
-                <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
-                  <a
-                    className="rounded-sm inline-flex items-center justify-center bg-success px-2 py-2 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-2"
-                    href="#"
+                <div className="flex items-center justify-center p-2.5">
+                  <button
+                    onClick={() => rejectedizin(parseInt(izin.izin_id))}
+                    disabled={izin.status === 2}
+                    className={`rounded-sm px-4 py-2 font-medium text-white ${izin.status === 2 ? "bg-gray-400 cursor-not-allowed" : "bg-danger hover:bg-opacity-90"}`}
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 448 512"
-                      width="18"
-                      height="18"
-                      className="fill-current mr-2"
-                    >
-                      <path d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z" />
-                    </svg>
-                    <span>Details</span>
-                  </a>
+                    Rejected
+                  </button>
+                </div>
+                <div className="flex items-center justify-center p-2.5">
+                  <button
+                    onClick={() => handleOpenModal(izin)}
+                    className="rounded-sm bg-primary px-4 py-2 font-medium text-white hover:bg-opacity-90"
+                  >
+                    Details
+                  </button>
                 </div>
               </div>
             ))
           ) : (
-            <p>Loading.....</p>
+            <p className="p-5 text-center">
+              Loading data atau data tidak ditemukan...
+            </p>
           )}
-          {error && <p style={{ color: "red" }}>{error}</p>}
+          {error && <p className="p-5 text-center text-red-500">{error}</p>}
         </div>
       </div>
+
+      {/* Render Modal secara kondisional */}
+      {isModalOpen && selectedIzin && (
+        <ModalDetailIzin izin={selectedIzin} onClose={handleCloseModal} />
+      )}
     </>
   );
 };

@@ -8,6 +8,7 @@ export type Izin = {
   end_date: string;
   alasan: string;
   status: number;
+  foto: string;
   approve_by: string;
   approve_at: string;
   users: Users;
