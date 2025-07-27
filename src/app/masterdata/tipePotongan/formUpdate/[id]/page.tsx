@@ -11,19 +11,18 @@ import "react-toastify/dist/ReactToastify.css";
 
 const FormUpdateTipePotongan = ({ params }: { params: { id: string } }) => {
   const router = useRouter();
-  const { id } = params; // Ambil ID dari URL
+  const { id } = params;
 
-  // State untuk menampung data form Tipe Potongan
-  const [tipePotonganData, setTipePotonganData] = useState<
-    Partial<Tipe_potongan>
-  >({
+  // State ini akan menyimpan nilai form yang bisa berubah
+  const [formData, setFormData] = useState<Partial<Tipe_potongan>>({
     name_potongan: "",
     nilai_potongan: 0,
   });
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // useEffect untuk mengambil data Tipe Potongan yang akan di-edit
+  // useEffect untuk mengambil data awal
   useEffect(() => {
     if (!id) return;
 
@@ -37,8 +36,9 @@ const FormUpdateTipePotongan = ({ params }: { params: { id: string } }) => {
           throw new Error("Gagal mengambil data Tipe Potongan");
         }
         const apiResponse: ApiResponse<Tipe_potongan> = await response.json();
-        if (apiResponse.Status === "Success") {
-          setTipePotonganData(apiResponse.Data);
+        if (apiResponse.Status === "Success" && apiResponse.Data) {
+          // Set data awal ke dalam form state
+          setFormData(apiResponse.Data);
         } else {
           throw new Error(apiResponse.Message || "Gagal memuat data");
         }
@@ -55,27 +55,26 @@ const FormUpdateTipePotongan = ({ params }: { params: { id: string } }) => {
     };
 
     fetchTipePotonganData();
-  }, [id]); // Jalankan lagi jika ID berubah
+  }, [id]);
 
-  // Handler umum untuk perubahan pada input form
+  // Fungsi ini akan memperbarui state setiap kali user mengetik
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setTipePotonganData((prevData) => ({
+    setFormData((prevData) => ({
       ...prevData,
-      [name]: name === "nilai_potongan" ? parseFloat(value) || 0 : value,
+      // [PERUBAHAN] Menggunakan parseInt untuk mendapatkan bilangan bulat (integer)
+      [name]: name === "nilai_potongan" ? parseInt(value, 10) || 0 : value,
     }));
   };
 
-  // Fungsi untuk mengirim data yang sudah diubah ke server
   const handleUpdate = async () => {
     setIsLoading(true);
     setError(null);
 
-    // Siapkan data untuk dikirim ke API
+    // Data yang dikirim sekarang diambil langsung dari state `formData` yang selalu ter-update
     const updatedData = {
-      tipe_potongan_id: tipePotonganData.tipe_potongan_id, // Pastikan ID dikirim sebagai angka
-      name_potongan: tipePotonganData.name_potongan,
-      nilai_potongan: tipePotonganData.nilai_potongan,
+      name_potongan: formData.name_potongan,
+      nilai_potongan: formData.nilai_potongan,
     };
 
     try {
@@ -96,9 +95,8 @@ const FormUpdateTipePotongan = ({ params }: { params: { id: string } }) => {
 
       toast.success(result.Message || "Data berhasil diperbarui!");
 
-      // Arahkan kembali ke halaman tabel setelah 2 detik
       setTimeout(() => {
-        router.push("/masterdata/tipePotongan"); // Sesuaikan path jika perlu
+        router.push("/masterdata/tipePotongan");
       }, 2000);
     } catch (err) {
       const errorMessage =
@@ -120,7 +118,7 @@ const FormUpdateTipePotongan = ({ params }: { params: { id: string } }) => {
         <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
           <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
             <h3 className="font-medium text-black dark:text-white">
-              Update Tipe Potongan: {tipePotonganData.name_potongan}
+              Update Tipe Potongan: {formData.name_potongan}
             </h3>
           </div>
           {isLoading ? (
@@ -139,7 +137,7 @@ const FormUpdateTipePotongan = ({ params }: { params: { id: string } }) => {
                 <input
                   type="text"
                   name="name_potongan"
-                  value={tipePotonganData.name_potongan || ""}
+                  value={formData.name_potongan || ""}
                   onChange={handleChange}
                   className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3"
                 />
@@ -152,7 +150,7 @@ const FormUpdateTipePotongan = ({ params }: { params: { id: string } }) => {
                 <input
                   type="number"
                   name="nilai_potongan"
-                  value={tipePotonganData.nilai_potongan || 0}
+                  value={formData.nilai_potongan || 0}
                   onChange={handleChange}
                   className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3"
                 />

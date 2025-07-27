@@ -2,30 +2,34 @@
 
 import { ApiResponse } from "@/types/ApiResponse";
 import { Potongan } from "@/types/Potongan";
-import { useState, useEffect, useCallback } from "react";
-
+import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const TablePotongan = () => {
   const [dataPotongan, setPotongan] = useState<Potongan[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedMonth, setSelectedMonth] = useState<string>("");
-  const [refreshTrigger, setRefreshTrigger] = useState(false);
 
-  const fetchPotongan = useCallback(
-    async (month: string) => {
+  // [PERBAIKAN] useEffect sekarang hanya bergantung pada `selectedMonth`
+  useEffect(() => {
+    // Jangan lakukan fetch jika belum ada bulan yang dipilih
+    if (!selectedMonth) {
+      setPotongan([]); // Kosongkan data jika tidak ada bulan terpilih
+      return;
+    }
+
+    const fetchPotongan = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
         const potonganResponse = await fetch(
-          `http://localhost:8080/v1/potongan/allPotongan?month=${month}`
+          `http://localhost:8080/v1/potongan/allPotongan?month=${selectedMonth}`
         );
 
-        console.log("Selected Month:", selectedMonth);
-
         if (!potonganResponse.ok) {
-          throw new Error("Http Error! Status : ${response.status}");
+          throw new Error(`Http Error! Status: ${potonganResponse.status}`);
         }
 
         const apiResponse: ApiResponse<Potongan[]> =
@@ -36,217 +40,170 @@ const TablePotongan = () => {
         } else {
           setPotongan([]);
         }
-        setRefreshTrigger((prev) => !prev);
       } catch (error) {
         setError(
-          error instanceof Error ? error.message : "An Unknown error eccurred"
+          error instanceof Error ? error.message : "An unknown error occurred"
         );
-        console.log(error);
+        console.error(error);
+      } finally {
+        setIsLoading(false);
       }
-    },
-    [selectedMonth]
-  );
+    };
+
+    fetchPotongan();
+  }, [selectedMonth]); // Dependency hanya `selectedMonth`
 
   const handlePotonganDelete = async (potongan_id: number) => {
+    if (!confirm("Apakah Anda yakin ingin menghapus data potongan ini?")) {
+      return;
+    }
     try {
-      const TipePotonganResponse = await fetch(
+      const deleteResponse = await fetch(
         `http://localhost:8080/v1/potongan/deletePotongan/${potongan_id}`,
         {
           method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
         }
       );
-      if (!TipePotonganResponse.ok) {
-        throw new Error(`HTTP Error! Status : ${TipePotonganResponse.status}`);
+
+      const result = await deleteResponse.json();
+
+      if (!deleteResponse.ok || result.Status !== "Success") {
+        throw new Error(result.Message || "Gagal menghapus data");
       }
-      const result = await TipePotonganResponse.json();
-      setSuccessMessage(result.message);
+
       toast.success("Berhasil Menghapus data Potongan");
       setPotongan(
-        dataPotongan?.filter(
-          (dataPotongan) => dataPotongan.potongan_id !== potongan_id
-        )
+        dataPotongan.filter((potongan) => potongan.potongan_id !== potongan_id)
       );
     } catch (error) {
-      setError(
-        error instanceof Error ? error.message : "An unknown error occurred"
+      toast.error(
+        error instanceof Error ? error.message : "Gagal menghapus data"
       );
     }
   };
 
+  // [PERBAIKAN] Handler ini sekarang hanya bertugas mengubah state bulan
   const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedMonth = e.target.value;
-    setSelectedMonth(selectedMonth);
-
-    toast.success(`Menampilkan Potongan Bulan ${selectedMonth}`, {
-      position: "top-right",
-      autoClose: 3000,
-    });
-
-    fetchPotongan(selectedMonth); // 🔹 Kirim hanya `month`
-  };
-  useEffect(() => {
-    if (selectedMonth) {
-      fetchPotongan(selectedMonth);
+    const newMonth = e.target.value;
+    setSelectedMonth(newMonth);
+    if (newMonth) {
+      toast.info(`Menampilkan Potongan Bulan ${newMonth}`);
     }
-  }, [selectedMonth, refreshTrigger, fetchPotongan]);
+  };
+
   return (
     <>
-      <ToastContainer />
+      <ToastContainer autoClose={3000} />
       <div className="rounded-sm border border-stroke bg-white px-12 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
-        <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
-          Data Potongan
-        </h4>
-        <select onChange={handleMonthChange} value={selectedMonth}>
-          <option value="">Select Month</option>
-          <option value="January">January</option>
-          <option value="February">February</option>
-          <option value="March">March</option>
-          <option value="April">April</option>
-          <option value="May">May</option>
-          <option value="June">June</option>
-          <option value="July">July</option>
-          <option value="August">August</option>
-          <option value="September">September</option>
-          <option value="October">October</option>
-          <option value="November">November</option>
-          <option value="December">December</option>
-        </select>
-        <a
-          className="rounded-sm mb-2 inline-flex items-center justify-center bg-primary px-2 py-2 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-2"
-          href="/masterdata/potongan/formInput"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 448 512"
-            width="18"
-            height="18"
-            className="fill-current mr-2"
-          >
-            <path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 144L48 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l144 0 0 144c0 17.7 14.3 32 32 32s32-14.3 32-32l0-144 144 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-144 0 0-144z" />
-          </svg>
-          <span>Insert Potongan</span>
-        </a>
-        {successMessage && <p className="text-green-500">{successMessage}</p>}
-        {error && <p className="text-red-500">{error}</p>}
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <h4 className="text-xl font-semibold text-black dark:text-white">
+            Data Potongan
+          </h4>
+          <div className="flex items-center gap-4">
+            <select
+              onChange={handleMonthChange}
+              value={selectedMonth}
+              className="rounded border border-stroke bg-transparent px-4 py-2 text-black outline-none dark:border-form-strokedark dark:bg-form-input dark:text-white"
+            >
+              <option value="">Pilih Bulan</option>
+              <option value="January">Januari</option>
+              <option value="February">Februari</option>
+              <option value="March">Maret</option>
+              <option value="April">April</option>
+              <option value="May">Mei</option>
+              <option value="June">Juni</option>
+              <option value="July">Juli</option>
+              <option value="August">Agustus</option>
+              <option value="September">September</option>
+              <option value="October">Oktober</option>
+              <option value="November">November</option>
+              <option value="December">Desember</option>
+            </select>
+            <a
+              className="rounded-sm inline-flex items-center justify-center bg-primary px-4 py-2 text-center font-medium text-white hover:bg-opacity-90"
+              href="/masterdata/potongan/formInput"
+            >
+              <span>Insert Potongan</span>
+            </a>
+          </div>
+        </div>
+
         <div className="flex flex-col">
-          <div className="grid max-screen grid-cols-5 rounded-sm bg-gray-2 dark:bg-meta-4 sm:grid-cols-7 text-center">
-            <div className="p-2.5 text-center xl:p-5">
-              <h5 className="text-sm font-medium uppercase xsm:text-base">
-                No
-              </h5>
+          <div className="grid grid-cols-7 rounded-sm bg-gray-2 dark:bg-meta-4 text-center">
+            {/* Header */}
+            <div className="p-2.5 xl:p-5">
+              <h5 className="text-sm font-medium uppercase">No</h5>
             </div>
-            <div className="p-2.5 text-center xl:p-5">
-              <h5 className="text-sm font-medium uppercase xsm:text-base">
-                Nama Karyawan
-              </h5>
+            <div className="p-2.5 xl:p-5">
+              <h5 className="text-sm font-medium uppercase">Nama Karyawan</h5>
             </div>
-            <div className="p-2.5 text-center xl:p-5">
-              <h5 className="text-sm font-medium uppercase xsm:text-base">
-                Tipe Potongan
-              </h5>
+            <div className="p-2.5 xl:p-5">
+              <h5 className="text-sm font-medium uppercase">Tipe Potongan</h5>
             </div>
-            <div className="p-2.5 text-center xl:p-5">
-              <h5 className="text-sm font-medium uppercase xsm:text-base">
-                Bulan
-              </h5>
+            <div className="p-2.5 xl:p-5">
+              <h5 className="text-sm font-medium uppercase">Bulan</h5>
             </div>
-            <div className="p-2.5 text-center xl:p-5">
-              <h5 className="text-sm font-medium uppercase xsm:text-base">
-                Tahun
-              </h5>
+            <div className="p-2.5 xl:p-5">
+              <h5 className="text-sm font-medium uppercase">Tahun</h5>
             </div>
-            <div className="hidden max p-2.5 text-center sm:block xl:p-5">
-              <h5 className="text-sm font-medium uppercase xsm:text-base">
-                Edit
-              </h5>
+            <div className="p-2.5 xl:p-5">
+              <h5 className="text-sm font-medium uppercase">Edit</h5>
             </div>
-            <div className="hidden max p-2.5 text-center sm:block xl:p-5">
-              <h5 className="text-sm font-medium uppercase xsm:text-base">
-                Delete
-              </h5>
+            <div className="p-2.5 xl:p-5">
+              <h5 className="text-sm font-medium uppercase">Delete</h5>
             </div>
           </div>
-          {dataPotongan.length && dataPotongan.length > 0 ? (
-            dataPotongan.map((Potongan, index) => {
-              console.log("Rendering row:", Potongan);
-              return (
-                <div
-                  key={Potongan.potongan_id}
-                  className="grid grid-cols-3 sm:grid-cols-7"
-                >
-                  <div className="flex-shrink-0 text-center">
-                    <p className="text-black text-center dark:text-white">
-                      {index + 1}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3 p-2.5 xl:p-5">
-                    <div className="flex-shrink-0 text-center ">
-                      <p className="text-black dark:text-white">
-                        {Potongan.full_name}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-center p-2.5 xl:p-2">
-                    <p className="text-black dark:text-white">
-                      {Potongan.name_potongan}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-center p-2.5 xl:p-2">
-                    <p className="text-black dark:text-white">
-                      {Potongan.month}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-center p-2.5 xl:p-2">
-                    <p className="text-black dark:text-white">
-                      {Potongan.year}
-                    </p>
-                  </div>
-                  <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
-                    <a
-                      className="rounded-sm inline-flex items-center justify-center bg-warning px-2 py-2 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-2"
-                      href="#"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="18"
-                        height="18"
-                        className="fill-current mr-2"
-                        viewBox="0 0 512 512"
-                      >
-                        <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1 0 32c0 8.8 7.2 16 16 16l32 0zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
-                      </svg>
-                      <span>Update </span>
-                    </a>
-                  </div>
-
-                  <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
-                    <button
-                      className="rounded-sm inline-flex items-center justify-center bg-danger px-2 py-2 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-2"
-                      onClick={() => handlePotonganDelete(Potongan.potongan_id)}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 448 512"
-                        width="18"
-                        height="18"
-                        className="fill-current mr-2"
-                      >
-                        <path d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z" />
-                      </svg>
-                      <span>Delete</span>
-                    </button>
-                  </div>
+          {/* Body */}
+          {isLoading ? (
+            <p className="text-center p-4">Loading...</p>
+          ) : error ? (
+            <p className="text-center p-4 text-danger">{error}</p>
+          ) : dataPotongan.length > 0 ? (
+            dataPotongan.map((potongan, index) => (
+              <div
+                key={potongan.potongan_id}
+                className="grid grid-cols-7 border-b border-stroke dark:border-strokedark text-center"
+              >
+                <div className="flex items-center justify-center p-2.5">
+                  <p className="text-black dark:text-white">{index + 1}</p>
                 </div>
-              );
-            })
+                <div className="flex items-center justify-center p-2.5">
+                  <p className="text-black dark:text-white">
+                    {potongan.full_name}
+                  </p>
+                </div>
+                <div className="flex items-center justify-center p-2.5">
+                  <p className="text-black dark:text-white">
+                    {potongan.name_potongan}
+                  </p>
+                </div>
+                <div className="flex items-center justify-center p-2.5">
+                  <p className="text-black dark:text-white">{potongan.month}</p>
+                </div>
+                <div className="flex items-center justify-center p-2.5">
+                  <p className="text-black dark:text-white">{potongan.year}</p>
+                </div>
+                <div className="flex items-center justify-center p-2.5">
+                  <a
+                    href={`/masterdata/potongan/formUpdate/${potongan.potongan_id}`}
+                    className="text-warning hover:text-opacity-80"
+                  >
+                    Update
+                  </a>
+                </div>
+                <div className="flex items-center justify-center p-2.5">
+                  <button
+                    onClick={() => handlePotonganDelete(potongan.potongan_id)}
+                    className="text-danger hover:text-opacity-80"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))
           ) : (
-            <p className="text-center mt-4">
-              Tidak ada Data Potongan untuk bulan ini.
+            <p className="text-center p-4">
+              Silakan pilih bulan untuk menampilkan data potongan.
             </p>
           )}
         </div>
