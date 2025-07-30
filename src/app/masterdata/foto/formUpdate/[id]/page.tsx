@@ -31,7 +31,7 @@ const FormUpdateFoto = ({ params }: { params: { id: string } }) => {
       setIsLoading(true);
       try {
         const [faceRes, usersRes] = await Promise.all([
-          fetch(`http://localhost:8080/v1/face/getFotoById/${id}`),
+          fetch(`http://localhost:8080/v1/face/getFacesById/${id}`),
           fetch("http://localhost:8080/v1/users/allUsers"),
         ]);
 

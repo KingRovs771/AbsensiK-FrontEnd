@@ -121,7 +121,7 @@ const TableFoto = () => {
             faces.map((face, index) => (
               <div
                 className={`grid grid-cols-4 ${index === faces.length - 1 ? "" : "border-b border-stroke dark:border-strokedark"}`}
-                key={face.face_id || index}
+                key={face.faces_id || index}
               >
                 <div className="flex items-center justify-center p-2.5 xl:p-5">
                   <Image
@@ -140,7 +140,7 @@ const TableFoto = () => {
                 <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
                   <a
                     className="rounded-sm inline-flex items-center justify-center bg-warning px-2 py-2 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-2"
-                    href={`/masterdata/foto/formUpdate/${face.face_id}`}
+                    href={`/masterdata/foto/formUpdate/${face.faces_id}`}
                   >
                     <span>Update</span>
                   </a>
