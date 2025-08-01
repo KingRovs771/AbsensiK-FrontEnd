@@ -174,7 +174,7 @@ const TablePotongan = () => {
                 </div>
                 <div className="flex items-center justify-center p-2.5">
                   <p className="text-black dark:text-white">
-                    {potongan.name_potongan}
+                    {potongan.tipe_potongan}
                   </p>
                 </div>
                 <div className="flex items-center justify-center p-2.5">
