@@ -57,13 +57,18 @@ const TableRole = () => {
       {successMessage && <p className="text-green-500">{successMessage}</p>}
       {error && <p className="text-red-500">{error}</p>}
       <div className="flex flex-col">
-        <div className="grid max-screen grid-cols-5 rounded-sm bg-gray-2 dark:bg-meta-4 sm:grid-cols-3 text-center">
+        <div className="grid max-screen grid-cols-5 rounded-sm bg-gray-2 dark:bg-meta-4 sm:grid-cols-4 text-center">
           <div className="p-2.5 text-center xl:p-5">
             <h5 className="text-sm font-medium uppercase xsm:text-base">No</h5>
           </div>
           <div className="p-2.5 text-center xl:p-5">
             <h5 className="text-sm font-medium uppercase xsm:text-base">
               Nama Role
+            </h5>
+          </div>
+          <div className="p-2.5 text-center xl:p-5">
+            <h5 className="text-sm font-medium uppercase xsm:text-base">
+              Rate Gaji
             </h5>
           </div>
           <div className="p-2.5 text-center xl:p-5">
@@ -75,7 +80,7 @@ const TableRole = () => {
         {dataRole && dataRole.length > 0 ? (
           dataRole.map((role, index) => (
             <div
-              className={`grid grid-cols-3 sm:grid-cols-3 ${
+              className={`grid grid-cols-3 sm:grid-cols-4 ${
                 index === dataRole.length - 1
                   ? ""
                   : "border-b border-stroke dark:border-strokedark"
@@ -92,6 +97,14 @@ const TableRole = () => {
               <div className="flex items-center gap-3 p-2.5 xl:p-5">
                 <div className="flex-shrink-0 text-center ">
                   <p className="text-black dark:text-white">{role.name_role}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-2.5 xl:p-5">
+                <div className="flex-shrink-0 text-center ">
+                  <p className="text-black dark:text-white">
+                    {role.daily_rate}
+                  </p>
                 </div>
               </div>
 

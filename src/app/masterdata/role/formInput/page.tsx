@@ -9,6 +9,7 @@ import "react-toastify/dist/ReactToastify.css";
 const FormRolePage: React.FC = () => {
   const [kodeRole, setKodeRole] = useState<string>("");
   const [nameRole, setNameRole] = useState<string>("");
+  const [daily_rate, setDailyrate] = useState<number>(0);
   const [Description, setDescription] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -18,6 +19,7 @@ const FormRolePage: React.FC = () => {
     const role = {
       role_id: kodeRole,
       name_role: nameRole,
+      daily_rate: daily_rate,
       description: Description,
     };
     try {
@@ -40,9 +42,6 @@ const FormRolePage: React.FC = () => {
       toast.success("Data berhasil disimpan!", { autoClose: 3000 });
       setSuccessMessage(resultSaveRole);
       setDataRoles([...(dataRoles || []), role]);
-      setKodeRole("");
-      setNameRole("");
-      setDescription("");
     } catch (error) {
       toast.error("Gagal menyimpan data!", { autoClose: 3000 });
       setError(
@@ -93,6 +92,22 @@ const FormRolePage: React.FC = () => {
                       value={nameRole}
                       onChange={(e) => setNameRole(e.target.value)}
                       placeholder="Masukkan Password"
+                      className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                      required
+                    />
+                  </div>
+
+                  <div className="mb-4.5">
+                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                      Rata-Rata Gaji Harian{" "}
+                      <span className="text-meta-1">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="dailyrate"
+                      value={daily_rate}
+                      onChange={(e) => setDailyrate(Number(e.target.value))}
+                      placeholder="Masukkan Rata-Rata Gaji"
                       className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                       required
                     />

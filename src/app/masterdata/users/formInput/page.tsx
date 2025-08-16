@@ -9,6 +9,13 @@ import { UsersData } from "@/types/UsersData";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+// NOTE: Assuming the Role type includes 'daily_rate'
+// export interface Role {
+//   role_id: string;
+//   name_role: string;
+//   daily_rate: number;
+// }
+
 const FormUserPage: React.FC = () => {
   const [dataDepartement, setDepartement] = useState<Departement[]>([]);
   const [dataRole, setRole] = useState<Role[]>([]);
@@ -36,7 +43,7 @@ const FormUserPage: React.FC = () => {
           "http://localhost:8080/v1/roles/AllRoles"
         );
         if (!roleResponse.ok) {
-          throw new Error("Http Error! Status : ${response.status}");
+          throw new Error(`Http Error! Status : ${roleResponse.status}`);
         }
         const apiResponse: ApiResponse<Role[]> = await roleResponse.json();
         if (apiResponse.Status === "Success") {
@@ -46,7 +53,7 @@ const FormUserPage: React.FC = () => {
         }
       } catch (error) {
         setError(
-          error instanceof Error ? error.message : "An Unknown error eccurred"
+          error instanceof Error ? error.message : "An Unknown error occurred"
         );
         console.log(error);
       }
@@ -58,7 +65,7 @@ const FormUserPage: React.FC = () => {
           "http://localhost:8080/v1/departements/AllDepartements"
         );
         if (!departementResponse.ok) {
-          throw new Error("Http Error! Status : ${departementResponse.status}");
+          throw new Error(`Http Error! Status : ${departementResponse.status}`);
         }
         const apiResponse: ApiResponse<Departement[]> =
           await departementResponse.json();
@@ -69,7 +76,7 @@ const FormUserPage: React.FC = () => {
         }
       } catch (error) {
         setError(
-          error instanceof Error ? error.message : "An Unknown error eccurred"
+          error instanceof Error ? error.message : "An Unknown error occurred"
         );
         console.log(error);
       }
@@ -78,7 +85,32 @@ const FormUserPage: React.FC = () => {
     fetchDepartements();
   }, []);
 
+  // Handler for role selection change
+  const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedRoleId = e.target.value;
+    setRoleId(selectedRoleId);
+
+    // Find the selected role from the dataRole state
+    const selectedRole = dataRole.find(
+      (role) => role.role_id === selectedRoleId
+    );
+
+    // If a role is found, update the daily rate state
+    // Otherwise, reset it to 0
+    if (selectedRole && selectedRole.daily_rate) {
+      setDailyRate(selectedRole.daily_rate);
+    } else {
+      setDailyRate(0);
+    }
+  };
+
   const SaveDataUsers = async () => {
+    // Basic validation
+    if (!userUID || !username || !password || !roleId || !departmentsId) {
+      toast.error("Please fill all required fields!", { autoClose: 3000 });
+      return;
+    }
+
     const users = {
       user_uid: userUID,
       username: username,
@@ -102,19 +134,34 @@ const FormUserPage: React.FC = () => {
         }
       );
       if (!usersResponse.ok) {
-        throw new Error(`HTTP Error! Status : ${usersResponse.status}`);
+        const errorData = await usersResponse.json();
+        throw new Error(
+          errorData.message || `HTTP Error! Status : ${usersResponse.status}`
+        );
       }
 
       const ResultUsers = await usersResponse.json();
 
       toast.success("Data berhasil disimpan!", { autoClose: 3000 });
-      setSuccessMessage(ResultUsers);
+      setSuccessMessage(ResultUsers.Message || "Success");
       setUsers([...(dataUsers || []), users]);
-      alert("Input Users Berhasil");
+
+      // Clear form fields after successful submission
+      setUserUID("");
+      setUsername("");
+      setPassword("");
+      setEmail("");
+      setFullName("");
+      setGender("");
+      setPhone("");
+      setAddress("");
+      setDailyRate(0);
+      setDepartmeentsId("");
+      setRoleId("");
     } catch (error) {
       toast.error("Gagal menyimpan data!", { autoClose: 3000 });
       setError(
-        error instanceof Error ? error.message : "An Unknown Error Occured"
+        error instanceof Error ? error.message : "An Unknown Error Occurred"
       );
     }
   };
@@ -132,11 +179,24 @@ const FormUserPage: React.FC = () => {
                   User Form
                 </h3>
               </div>
-              {successMessage && (
-                <p className="text-green-500">{successMessage}</p>
-              )}
-              {error && <p className="text-red-500">{error}</p>}
+
               <div className="p-6.5">
+                {successMessage && (
+                  <div
+                    className="mb-4.5 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative"
+                    role="alert"
+                  >
+                    <span className="block sm:inline">{successMessage}</span>
+                  </div>
+                )}
+                {error && (
+                  <div
+                    className="mb-4.5 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+                    role="alert"
+                  >
+                    <span className="block sm:inline">{error}</span>
+                  </div>
+                )}
                 <div className="mb-4.5">
                   <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                     Kode Pegawai <span className="text-meta-1">*</span>
@@ -146,14 +206,14 @@ const FormUserPage: React.FC = () => {
                     id="userUID"
                     value={userUID}
                     onChange={(e) => setUserUID(e.target.value)}
-                    placeholder="Masukkan Password"
+                    placeholder="Masukkan Kode Pegawai"
                     className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                   />
                 </div>
                 <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
                   <div className="w-full">
                     <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                      Username
+                      Username <span className="text-meta-1">*</span>
                     </label>
                     <input
                       type="text"
@@ -196,11 +256,12 @@ const FormUserPage: React.FC = () => {
 
                 <div className="mb-4.5">
                   <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Departements
+                    Departements <span className="text-meta-1">*</span>
                   </label>
                   <select
                     name="departmentsId"
                     id="departmentsId"
+                    value={departmentsId}
                     onChange={(e) => setDepartmeentsId(e.target.value)}
                     className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                   >
@@ -208,7 +269,6 @@ const FormUserPage: React.FC = () => {
                     {dataDepartement && dataDepartement.length > 0 ? (
                       dataDepartement.map((departement) => (
                         <option
-                          id="departmentsId"
                           key={departement.departments_id}
                           value={departement.departments_id}
                         >
@@ -216,34 +276,35 @@ const FormUserPage: React.FC = () => {
                         </option>
                       ))
                     ) : (
-                      <option value="">Loading.....</option>
+                      <option value="" disabled>
+                        Loading.....
+                      </option>
                     )}
                   </select>
                 </div>
 
                 <div className="mb-4.5">
                   <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Role
+                    Role <span className="text-meta-1">*</span>
                   </label>
                   <select
                     name="roleId"
                     id="roleId"
-                    onChange={(e) => setRoleId(e.target.value)}
+                    value={roleId}
+                    onChange={handleRoleChange} // Use the new handler here
                     className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                   >
                     <option value="">---Pilih Role----</option>
                     {dataRole.length > 0 ? (
                       dataRole.map((role) => (
-                        <option
-                          id="roleId"
-                          key={role.role_id}
-                          value={role.role_id}
-                        >
+                        <option key={role.role_id} value={role.role_id}>
                           {role.name_role}
                         </option>
                       ))
                     ) : (
-                      <option value="">Loading.....</option>
+                      <option value="" disabled>
+                        Loading.....
+                      </option>
                     )}
                   </select>
                 </div>
@@ -268,16 +329,13 @@ const FormUserPage: React.FC = () => {
                   </label>
                   <select
                     id="gender"
+                    value={gender}
                     onChange={(e) => setGender(e.target.value)}
                     className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                   >
                     <option value="">---Pilih Jenis Kelamin----</option>
-                    <option value="Laki-Laki" id="gender">
-                      Laki-Laki
-                    </option>
-                    <option value="Perempuan" id="gender">
-                      Perempuan
-                    </option>
+                    <option value="Laki-Laki">Laki-Laki</option>
+                    <option value="Perempuan">Perempuan</option>
                   </select>
                 </div>
 
@@ -303,8 +361,9 @@ const FormUserPage: React.FC = () => {
                     type="number"
                     id="dailyrate"
                     value={dailyrate}
-                    onChange={(e) => setDailyRate(Number(e.target.value))}
-                    placeholder="Masukkan Bayaran harian"
+                    placeholder="Pilih Role untuk menampilkan bayaran"
+                    readOnly // This makes the input field not editable
+                    disabled // This visually indicates the field is disabled
                     className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                   />
                 </div>
@@ -317,7 +376,7 @@ const FormUserPage: React.FC = () => {
                     rows={6}
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
-                    placeholder="Type your message"
+                    placeholder="Masukkan Alamat"
                     className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                   ></textarea>
                 </div>
